@@ -1,0 +1,239 @@
+/* utils */
+.relative {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+}
+
+/* overwrite bootstrap styles */
+.navbar {
+    margin-bottom: 0;
+}
+
+.pagination-tiny>li>a, .pagination-tiny>li>span {
+    padding:3px 6px;
+    font-size:10px;
+}
+
+.pagination-tiny {
+    margin:10px 0;   
+}
+
+/* overwrite DataTable styles */
+#dtm-search-result-table thead th, #dtm-search-result-table thead td {
+    border-bottom: none;
+}
+
+#dtm-search-result-table td {
+    padding:5px;
+}
+
+#dtm-search-result-table thead td {
+    padding: 3px 10px 3px 18px;
+}
+
+#dtm-search-result-table .sorting,
+#dtm-search-result-table .sorting_asc,
+#dtm-search-result-table .sorting_desc {
+    background-position: center left;
+}
+
+#dtm-search-result-table.no-footer {
+    border-bottom: none;
+}
+
+#dtm-datatable-top {
+    float:right;
+}
+
+#dtm-datatable-top #dtm-search-result-table_paginate {
+    position:relative;
+    top:-5px;
+    float:right;
+}
+
+#dtm-datatable-top #dtm-search-result-table_length {
+    float:right;
+    margin-right:10px;
+}
+
+#dtm-datatable-top #dtm-search-result-table_filter {
+    margin-right:10px;
+    float:right;
+}
+
+#dtm-datatable-top #dtm-search-result-table_filter input {
+    width:200px;
+}
+
+#dtm-datatable-top .dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding:4px 8px;
+}
+
+#dtm-search-result-block {
+    position: relative;
+    top:-30px;
+}
+
+/* dtm base */
+#dtm {
+    width: 100%;
+    background-color: #ffffff;
+    position: relative;
+    min-height: 100%;
+}
+
+#dtm-header {
+}
+
+#dtm-content {
+    padding-bottom: 50px;
+}
+
+#dtm-footer {
+    bottom: 0px;
+    width: 100%;
+    height: 30px;
+    line-height: 30px;
+    position: absolute;
+    text-align: left;
+    background: #ddd;
+    padding-left:40px;
+    color:#428bca;
+}
+
+#dtm-top-search {
+    width:330px;
+}
+
+#dtm-top-search-input {
+    height:34px;
+}
+
+.dtm-top-search-input-focus {
+    top: -20;
+    left: 0;
+    background:#fff;
+    z-index:101;
+}
+
+#dtm-search-result-table_info {
+    float: left;
+}
+
+/* dtm index page */
+#dtm-index-search {
+    padding-top:20px;
+}
+
+#dtm-index-intro {
+    padding-bottom:20px;
+}
+
+#dtm-index-example {
+    padding-bottom:20px;
+}
+
+#dtm-index-search-form {
+    padding:20px 0;
+}
+
+/* dtm search page */
+#dtm-search-result {
+    padding:10px 10px;
+}
+
+#dtm-search-summary {
+    color: #888;
+    z-index:100;
+}
+
+#dtm-search-summary-text {
+    display:inline-block;
+}
+    
+#dtm-search-download-table {
+    vertical-align:top;
+}
+
+#dtm-search-utils {
+    padding: 0;
+}
+
+#dtm-search-pagination {
+    padding-top:10px;
+    float:right;
+    text-align:right;
+}
+
+#dtm-search-pagination-arrow {
+    display: inline-block;
+    vertical-align:bottom;
+}
+
+#dtm-search-pagination-arrow ul {
+    margin: 0;
+    font-weight: bold;
+}
+
+#dtm-search-pagination-select {
+    display: inline-block;
+    vertical-align:bottom;
+    margin-left:5px;
+}
+
+#dtm-search-result-table {
+    margin-top:10px;
+}
+
+.dtm-search-direct-mark {
+    color: #ffa500;
+}
+
+.dtm-search-unknown-mark {
+    color: #ddd;
+}
+
+.dtm-search-evidence-mark {
+    color: #aaa;
+}
+
+/* dtm annotation page */
+#dtm-annotation {
+    width:100%;
+    padding-top:20px;
+}
+
+#dtm-left-column {
+    display: inline-block;
+    width:49%;
+    margin-right:0.5%;
+    vertical-align:top;
+}
+
+#dtm-right-column {
+    display: inline-block;
+    width:49%;
+    margin-left:0.5%;
+    vertical-align:top;
+}
+
+#dtm-annotation-docid {
+    font-size:16px;
+    padding:5px 0;
+}
+
+#dtm-annotation-text {
+
+}
+
+ul#dtm-annotation-sentence-list {
+    padding: 0 0 0 20px;
+    list-style-type:decimal;
+}
+
+ul#dtm-annotation-sentence-list li {
+    padding:5px 10px;
+}

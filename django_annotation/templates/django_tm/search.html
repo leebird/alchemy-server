@@ -1,0 +1,98 @@
+{% extends app_name|add:"/base.html" %}
+
+{% block content %}
+<div id="dtm-search-result">
+  <div id="dtm-search-utils" class="container-fluid">
+    <div id="dtm-search-summary" class="col-md-6">
+      <div id="dtm-search-summary-text">
+	{{ stat.positive_doc_length}} of {{ stat.pubmed_length }} abstracts from PubMed contain miRNA-gene relations. <br />
+	{{ stat.direct_rel_length }} miRNA-target pairs and {{stat.unknown_rel_length}} miRNA-gene regulation pairs are extracted.
+<!-- with {{ stat.mirna_length }} unique miRNA(s) and {{ stat.gene_length }} unique gene names.-->
+      </div>
+      <div class="btn-group" id="dtm-search-download-table" class="col-md-1">
+	<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Download 
+	  <span class="caret"></span>
+	</button>
+	<ul class="dropdown-menu dropdown-menu-right" role="menu">
+	  <li><a href="{% url 'download' query 1 %}">All the miRNA-gene pairs</a></li>
+	  <li><a href="{% url 'download' query 2 %}">miRNA-target pairs</a></li>
+	  <li><a href="{% url 'download' query 3 %}">miRNA-gene regulation pairs</a></li>
+	</ul>
+      </div>
+    </div>
+    <!-- pagination
+    <div id="dtm-search-pagination" class="col-md-2">
+      <div id="dtm-search-pagination-arrow">
+	<nav>
+	  <ul class="pagination pagination-tiny">
+	    {% if pages.curr == pages.first %}
+	    <li class="disabled"><a href="?page={{ pages.before }}">Previous</a></li>
+	    {% else %}
+	    <li><a href="?page={{ pages.before }}">Previous</a></li>
+	    {% endif %}
+	    {% if pages.curr == pages.last %}
+	    <li class="disabled"><a href="?page={{ pages.next }}">Next</a></li>
+	    {% else %}
+	    <li><a href="?page={{ pages.next }}">Next</a></li>
+	    {% endif %}
+	  </ul>
+	</nav>
+      </div>
+      <div id="dtm-search-pagination-select">
+	Page <select onchange="location = this.options[this.selectedIndex].value;">
+	  {% if pages.curr > pages.first %}
+	  <option value="?page={{ pages.first }}">{{ pages.first }}</option>
+	  {% endif %}
+	  {% for p in pages.prev %}
+	  <option value="?page={{ p }}">{{ p }}</option>
+	  {% endfor %}
+	  <option value="?page={{ pages.curr }}" selected>{{ pages.curr }}</option>
+	  {% for p in pages.post %}
+	  <option value="?page={{ p }}">{{ p }}</option>
+	  {% endfor %}
+	  {% if pages.curr < pages.last %}
+	  <option value="?page={{ pages.last }}">{{ pages.last }}</option>
+	  {% endif %}
+	</select>
+      </div>
+    </div>
+-->
+  </div>
+
+  <div id="dtm-search-result-block">
+    <table class="table table-hover" id="dtm-search-result-table">
+      <thead>
+	<tr>
+	  <td>PMID</td><td>miRNA</td><td>Gene</td><td>Direct</td><td>Sentence</td><td>Evidence</td>
+	</tr>
+      </thead>
+      <tbody>
+	{% for tuple in tuples %}
+	<tr>
+	  <td>{{ tuple.0 }}</td>
+	  <td>{{ tuple.1 }}</td>
+	  <td>{{ tuple.2 }}</td>
+	  <td>
+	    {% if tuple.3 == 'D' %}
+	    <span class="glyphicon glyphicon-star dtm-search-direct-mark"></span>
+	    {% else %}
+	    <span class="glyphicon glyphicon-star-empty dtm-search-unknown-mark"></span>
+	    {% endif %}
+	  </td>
+	  <td>
+	    <a href="{% url 'sentence' tuple.0 tuple.4 %}">
+	      {{ tuple.5 }}
+	    </a>
+	  </td>
+	  <td>
+	    <a href="{% url 'annotation' tuple.0 %}">
+	      <span class="glyphicon glyphicon-file dtm-search-evidence-mark"></span>
+	    </a>
+	  </td>
+	</tr>
+	{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

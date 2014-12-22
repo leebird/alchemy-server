@@ -1,0 +1,19 @@
+{% extends app_name|add:"/base.html" %}
+
+{% block content %}
+
+<table class="table">
+  <thead>
+    <tr>
+      <td>PMID</td><td>Abstract</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for doc in documents %}
+    <tr>
+      <td>{{ doc.doc_id }}</td><td>{{ doc.text }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
