@@ -42,7 +42,7 @@
 	      {% if top_form %}
 	      <form class="navbar-form navbar-left" role="search" action="{{post_url}}" method="post">{% csrf_token %}
 		<div class="form-group relative" id="dtm-top-search">
-		  <textarea id="dtm-top-search-input" class="form-control" rows="1" cols="40" placeholder="Search" name="query">{{ original_query }}</textarea>
+		  <textarea id="dtm-top-search-input" class="form-control" rows="1" cols="45" placeholder="Search" name="query">{{ original_query }}</textarea>
 		</div>
 		<button type="submit" class="btn btn-default" id="#dtm-top-search-submit">Submit</button>
 	      </form>

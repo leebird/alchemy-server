@@ -22,8 +22,16 @@
 }
 
 /* overwrite DataTable styles */
+table.dataTable thead .sorting {
+    background: url('../images/both_arrow.png') no-repeat center right;
+}
+
 #dtm-search-result-table thead th, #dtm-search-result-table thead td {
     border-bottom: none;
+    font-weight: bold;
+    vertical-align: middle;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 #dtm-search-result-table td {
@@ -113,7 +121,7 @@
 }
 
 .dtm-top-search-input-focus {
-    top: -20;
+    top: -20px;
     left: 0;
     background:#fff;
     z-index:101;
@@ -155,7 +163,13 @@
 }
     
 #dtm-search-download-table {
-    vertical-align:top;
+    vertical-align:bottom;
+    color: #000000;
+}
+
+#dtm-search-download-table:hover {
+    cursor: pointer;
+    text-decoration: underline;
 }
 
 #dtm-search-utils {
@@ -198,6 +212,16 @@
 
 .dtm-search-evidence-mark {
     color: #aaa;
+}
+
+#dtm-result-tbheader-evidence {
+    text-align: center;
+    font-size: 14px;
+}
+
+#dtm-result-tbheader-sentence,
+#dtm-result-tbheader-abstract {
+    font-size: 14px;
 }
 
 /* dtm annotation page */

@@ -17,12 +17,12 @@ from django_annotation.models import *
 from django_annotation.utils.transform import *
 from django_annotation.utils.query_processor import QueryProcessor
 from django_annotation.utils.tagger import SpanTagger
-from django_annotation.utils.text_annotation.annotation import Entity
+from annotation.annotation import Entity
 from django_annotation.forms import SearchPubMedForm
 
 class BaseView(FormView):
     # make app name visible for all child classes
-    app_name = 'django_tm'
+    app_name = 'django_annotation'
 
     def get_context_data(self,**kwargs):
         context = super(BaseView, self).get_context_data(**kwargs)
@@ -136,13 +136,14 @@ class SearchView(BaseView):
 
         tuples = {}
         rel_sentids = {}
+        sentid_sent = {}
 
         for doc in docs:
             rels = list(doc.relation_set.all())
             sents = list(doc.entity_set.filter(category__category='Sentence'))
 
             # map sentence id => sentence start and text
-            sentid_sent = {}
+
             for sent in sents:
                 sentid_sent[sent.id] = (sent.get_start(),sent.get_text())
 
@@ -186,7 +187,7 @@ class SearchView(BaseView):
                     tuples[row][2] = rel_sents
 
         rows = [row+(attrs[0],','.join(attrs[1]),len(attrs[2]))
-                for row,attrs in tuples.iteritems()]
+                for row,attrs in tuples.items()]
 
         rows = sorted(rows, key=self.get_row_score, reverse=True)
 
@@ -342,7 +343,7 @@ class AnnotationView(BaseView):
                     if arg.get_start() >= sent.start and arg.get_end() <= sent.end:
                         tuples[row].append(sentid_sentpos[sent.id])
 
-        for row,sents in tuples.iteritems():
+        for row,sents in tuples.items():
             tuples[row] = sorted(list(set(sents)))
 
         args = list(set(args))
@@ -406,7 +407,7 @@ class SentenceView(AnnotationView):
                     if arg.get_start() >= sent.start and arg.get_end() <= sent.end:
                         tuples[row].append(sentid_sentpos[sent.id])
 
-        for row,sents in tuples.iteritems():
+        for row,sents in tuples.items():
             tuples[row] = sorted(list(set(sents)))
 
         # make highligted text
@@ -427,3 +428,110 @@ class SentenceView(AnnotationView):
         context['tuples'] = tuples
         context['post_url'] = reverse('handle_search')
         return context
+
+class GNSearchView(BaseView):
+    # search page
+    template_name = BaseView.app_name + '/search_gn.html'
+    form_class = SearchPubMedForm
+
+    view_name = 'gn_search'
+    processor = QueryProcessor()
+    page_size = 10
+    download = False
+
+    def make_pages(self, page, pmids):
+        paginator = Paginator(pmids,self.page_size)
+
+        try:
+            current_page = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            current_page = paginator.page(1)
+            page = 1
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            current_page = paginator.page(paginator.num_pages)
+            page = paginator.num_pages
+
+        # get page numbers before and after the current page
+        prev = page - 2 if page - 2 > 1 else 2
+        post = page + 3 if page + 3 < paginator.num_pages else paginator.num_pages
+
+        pages = {'first':1}
+        pages['prev'] = range(prev,page) if prev < page else []
+        pages['curr'] = page
+        pages['post'] = range(page+1,post) if post > page else []
+        pages['last'] = paginator.num_pages
+        pages['next'] = page + 1 if page+1 < pages['last'] else pages['last']
+        pages['before'] = page - 1 if page - 1 > 0 else 1
+        return current_page.object_list, pages
+
+    def get(self, request, query):
+        pmids = self.processor.get_pmids(query)
+        page = request.GET.get('page')
+        page = 1 if page is None else int(page)
+
+        self.original_query = query
+        self.query = query
+        self.genes = self.processor.get_lines(query)
+        self.genes.reverse()
+        self.stat = {}
+
+        self.stat["pubmed_length"] = len(pmids)
+
+        # all pmids
+        docs = list(Document.objects.filter(doc_id__in=pmids))
+
+        # pagintion
+        '''
+        docs = list(Document.objects.filter(doc_id__in=pmids))
+        slide, pages = self.make_pages(page,docs)
+        '''
+
+        self.stat["positive_doc_length"] = len(docs)
+
+        # get current page's docs
+        # docs = slide
+
+        tuples = []
+
+        for doc in docs:
+            entities = list(doc.entity_set.all())
+
+            for entity in entities:
+                gid = entity.entityattribute_set.filter(attribute='gid')[0].value
+                tuples.append((doc.doc_id,
+                               entity.text, 
+                              gid))
+        print(tuples)
+
+        self.tuples = tuples
+        self.request = request
+        return super(GNSearchView, self).get(request)
+
+    def get_context_data(self, **kwargs):
+        context = super(GNSearchView, self).get_context_data(**kwargs)
+        
+        context['tuples'] = self.tuples
+        context['request'] = self.request
+        context['post_url'] = reverse('handle_search')
+        context['stat'] = self.stat
+        context['query'] = self.query
+        context['original_query'] = self.original_query
+
+        # server-side pagination
+        # context['pages'] = self.pages
+        return context
+
+    def get_row_score(self, row):
+        score = 0
+        if row[3] == 'D':
+            score += 1
+
+        try:
+            idx = self.genes.index(row[2].lower())
+            score += idx*2 + 2
+        except ValueError:
+            pass
+
+        return score

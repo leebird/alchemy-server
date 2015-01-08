@@ -7,7 +7,7 @@ class Document(models.Model):
     text = models.TextField()
 
     def __unicode__(self):
-        return str((self.doc_id,self.text))
+        return str((self.doc_id, self.text))
 
     def __str__(self):
         return str(self)
@@ -15,19 +15,22 @@ class Document(models.Model):
     def __repr__(self):
         return self.__str__()
 
+
 class DocumentAtrribute(models.Model):
     doc = models.ForeignKey(Document)
     attribute = models.CharField(max_length=100)
     value = models.CharField(max_length=200)
 
     def __unicode__(self):
-        return str((self.doc.doc_id,self.attribute,self.value))
+        return str((self.doc.doc_id, self.attribute, self.value))
+
 
 class EntityType(models.Model):
     category = models.CharField(max_length=100)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.category
+
 
 class RelationType(models.Model):
     category = models.CharField(max_length=100)
@@ -44,20 +47,22 @@ class RelationType(models.Model):
                 res[at.category].append(at.entity_type.category)
             else:
                 res[at.category] = [at.entity_type.category]
-        for category,entity in res.items():
-            resStr.append(category+':'+'|'.join(entity))
+        for category, entity in res.items():
+            resStr.append(category + ':' + '|'.join(entity))
         return ', '.join(resStr)
 
     arguments.short_description = 'Arguments'
+
 
 class ArgumentType(models.Model):
     category = models.CharField(max_length=100)
     relation_type = models.ForeignKey(RelationType)
     entity_type = models.ForeignKey(EntityType)
-    mandatory = models.BooleanField()
+    mandatory = models.BooleanField(default=True)
 
     def __unicode__(self):
         return self.category
+
 
 class Entity(models.Model):
     doc = models.ForeignKey(Document)
@@ -79,7 +84,7 @@ class Entity(models.Model):
         return self.text
 
     def __unicode__(self):
-        return str((self.doc.doc_id,self.start,self.end,self.text))
+        return str((self.doc.doc_id, self.start, self.end, self.text))
 
     def __str__(self):
         return str(self)
@@ -87,13 +92,15 @@ class Entity(models.Model):
     def __repr__(self):
         return self.__str__()
 
+
 class EntityAttribute(models.Model):
     entity = models.ForeignKey(Entity)
     attribute = models.CharField(max_length=100)
     value = models.CharField(max_length=200)
 
     def __unicode__(self):
-        return str((self.entity,self.attribute,self.value))
+        return str((self.entity, self.attribute, self.value))
+
 
 class Relation(models.Model):
     doc = models.ForeignKey(Document)
@@ -104,6 +111,7 @@ class Relation(models.Model):
 
     def __str__(self):
         return str(self)
+
 
 class RelationArgument(models.Model):
     category = models.ForeignKey(ArgumentType)
@@ -126,10 +134,11 @@ class RelationArgument(models.Model):
         return self.argument.text
 
     def __unicode__(self):
-        return str((self.relation,self.argument,self.category))
+        return str((self.relation, self.argument, self.category))
 
     def __str__(self):
         return str(self)
+
 
 class RelationAttribute(models.Model):
     relation = models.ForeignKey(Relation)
@@ -137,7 +146,7 @@ class RelationAttribute(models.Model):
     value = models.CharField(max_length=200)
 
     def __unicode__(self):
-        return str((self.relation,self.attribute,self.value))
+        return str((self.relation, self.attribute, self.value))
 
     def __str__(self):
         return str(self)

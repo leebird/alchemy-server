@@ -20,17 +20,22 @@ $(function () {
 
 $(document).ready(function () {
     $('#dtm-search-result-table').DataTable({
+        "pageLength": 25,
+        "lengthChange": false,
+        "columnDefs": [
+            { "orderable": false, "targets": 3},
+            { "orderable": false, "targets": 5}
+        ],
         "dom": '<"#dtm-datatable-top.col-md-7"plf>rt<"bottom"ip><"clear">',
         "aaSorting": [],
         "pagingType": "simple_numbers",
-        stateSave: true,
+        stateSave: false,
         "language": {
             "paginate": {
                 "next": "&gt;",
                 "previous": "&lt;"
             },
             "search": "Filter:"
-        },
-        "iDisplayLength": 50
+        }
     });
 });
