@@ -1,3 +1,5 @@
+import functools
+
 class SpanTagger:
     
     tagHead = u'<{0} class="{1}" style="{2}">'
@@ -16,22 +18,23 @@ class SpanTagger:
     def tag(cls, text, entities, tags, classes, styles):
         pos2head = {}
         pos2tail = {}
-        entities = sorted(entities,cmp=cls.entity_order)
+        entities = sorted(entities,key=functools.cmp_to_key(cls.entity_order))
+                          # cmp=cls.entity_order)
 
         for entity in entities:
 
             try:
-                htmltag = tags[entity.type]
+                htmltag = tags[entity.category]
             except KeyError:
                 htmltag = 'span'
 
             try:
-                spancls = classes[entity.type]
+                spancls = classes[entity.category]
             except KeyError:
-                spancls = entity.type
+                spancls = entity.category
 
             try:
-                style = styles[entity.type]
+                style = styles[entity.category]
                 css = ''
                 for cssName, cssVal in style:
                     css += cssName+':'+cssVal+';'
@@ -50,7 +53,7 @@ class SpanTagger:
             except KeyError:
                 pos2tail[end] = [cls.tagTail.format(htmltag)]
 
-        positions = list(set(pos2head.keys() + pos2tail.keys()))
+        positions = list(set(list(pos2head.keys()) + list(pos2tail.keys())))
         positions.sort()
 
         slices = []
@@ -60,9 +63,9 @@ class SpanTagger:
             slices.append(text[prev:p])
             tags = []
 
-            if pos2tail.has_key(p):
+            if p in pos2tail:
                 tags += pos2tail[p]
-            if pos2head.has_key(p):
+            if p in pos2head:
                 tags += pos2head[p]
 
             slices += tags

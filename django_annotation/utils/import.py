@@ -1,6 +1,7 @@
 import sys
 import os
 import codecs
+import json
 
 sys.path.append('/home/leebird/Projects/django-annotation')
 sys.path.append('/home/leebird/Projects/legonlp/')
@@ -28,13 +29,28 @@ class Importer:
 
     @transaction.atomic
     def populate(self):
-        def handler(entity, fields):
+        def event_handler(event, fields):
             if len(fields) == 0:
                 return
-            gene_id = fields[0]
-            entity.property.add('gid', gene_id)
             
-        reader = AnnReader(entity_handler=handler)
+            attrs = json.loads(fields[0])
+            
+            for attr_name, attr_value in attrs.items():
+                attr_value = attr_value[0]
+                print(attr_value)
+                event.property.add(attr_name, attr_value)
+
+        def relation_handler(relation, fields):
+            if len(fields) == 0:
+                return
+            
+            attrs = json.loads(fields[0])
+
+            for attr_name, attr_value in attrs.items():
+                attr_value = attr_value[0]
+                relation.property.add(attr_name, attr_value)
+                
+        reader = AnnReader(event_handler=event_handler,relation_handler=relation_handler)
         
         for root, _, files in os.walk(self.path):
             for f in files:
@@ -76,6 +92,10 @@ class Importer:
 
     def add_relation(self, doc, relationList, tid2entity):
         for r in relationList:
+            print(r.property.vault)
+            if r.property.get('direction') == 'G2M':
+                continue
+                
             typing = self.get_relation_type(r.category)
             relation = Relation(doc=doc, category=typing)
             relation.save()
@@ -100,6 +120,10 @@ class Importer:
 
     def add_event(self, doc, eventList, tid2entity):
         for e in eventList:
+            print(e.property.vault)
+            if e.property.get('direction') == 'G2M':
+                continue
+                
             typing = self.get_relation_type(e.category)
             relation = Relation(doc=doc, category=typing)
             relation.save()
@@ -156,7 +180,7 @@ class Importer:
         typing = RelationType.objects.filter(category=category)
 
         if len(typing) == 0:
-            raise KeyError('Relation type is not defined')
+            raise KeyError('Relation type is not defined '+category)
 
         self.relationType[category] = typing[0]
         return typing[0]
@@ -176,7 +200,7 @@ class Importer:
                                              category=category)
 
         if len(typing) == 0:
-            raise KeyError('Argument type is not defined')
+            raise KeyError('Argument type is not defined '+relationType.category + entityType.category + category)
 
         self.argumentType[(relationType.category, entityType.category, category)] = typing[0]
         return typing[0]

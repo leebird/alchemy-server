@@ -20,6 +20,7 @@ class PubMedSearcher:
         query = ' OR '.join(set(query.split('\n')))
 
         self.fields['term'] = self.restrict_query(query)
+        print(self.fields['term'])
         # self.fields['term'] = query
         pairs = self.fields.items()
         url = self.eutils + '?' + parse.urlencode(self.fields)

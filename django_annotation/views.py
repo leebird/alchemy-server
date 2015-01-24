@@ -241,6 +241,27 @@ class DownloadView(SearchView):
             """Write the value by returning it, instead of storing in a buffer."""
             return value
 
+    def filter_rows(self, rows):
+        high_rows = []
+        low_rows = []
+        gene_file = open('/home/leebird/Dropbox/miRTex paper/use case/tnbc_down_genes.txt','r')
+        gene_names = gene_file.read().strip().split('\n')
+
+        for row in rows[1:]:
+            if row[0] == '24817091':
+                continue
+            
+            if row[2].upper() in gene_names:
+                row = list(row)
+                row[2] = row[2].upper()
+                high_rows.append(tuple(row))
+            else:
+                low_rows.append(row)
+        high_rows = sorted(high_rows, key=lambda a:a[2])
+        return [rows[0]]+high_rows+low_rows
+
+
+
     def get(self, request, query, dtype):
         self.dtype = int(dtype)
         super(DownloadView, self).get(request, query)
@@ -248,6 +269,8 @@ class DownloadView(SearchView):
         writer = csv.writer(pseudo_buffer)
 
         rows = self.build_rows()
+
+        rows = self.filter_rows(rows)
 
         response = StreamingHttpResponse((writer.writerow(row) for row in rows),
                                          content_type="text/csv")
@@ -293,7 +316,7 @@ class AnnotationView(BaseView):
               'Gene':[('color','#0d40c7'),('font-weight','bold')],
               'Complex':[('color','blue'),('font-weight','bold')],
               'Family':[('color','blue'),('font-weight','bold')],
-              'Target':[('text-decoration','underline'),('font-weight','bold')],
+              'Trigger':[('text-decoration','underline'),('font-weight','bold')],
               }
 
     classes = {}
@@ -354,7 +377,7 @@ class AnnotationView(BaseView):
             text = arg.get_text()
             start = arg.get_start()
             end = arg.get_end()
-            entity = Entity('',typing,start,end,text)
+            entity = Entity(typing,start,end,text)
             entities.append(entity)
 
         tagged = SpanTagger.tag(doc_text,entities,self.tags,self.classes,self.styles)
@@ -420,7 +443,7 @@ class SentenceView(AnnotationView):
             text = arg.get_text()
             start = arg.get_start()
             end = arg.get_end()
-            entity = Entity('',typing,start,end,text)
+            entity = Entity(typing,start,end,text)
             entities.append(entity)
 
         tagged = SpanTagger.tag(doc_text,entities,self.tags,self.classes,self.styles)
