@@ -1,0 +1,6 @@
+[submodule "django_annotation/submodules/annotation"]
+	path = django_annotation/submodules/annotation
+	url = https://github.com/leebird/annotation.git
+[submodule "django_annotation/submodules/alignment"]
+	path = django_annotation/submodules/alignment
+	url = https://github.com/leebird/alignment.git
