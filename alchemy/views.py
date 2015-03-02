@@ -1,9 +1,11 @@
 from django.views.generic import View
 from django_annotation.models import *
+from django_annotation.utils.transform import Document2Annotation
 from django.core import serializers
 from django.http import JsonResponse
 from alchemy.utils.document_retriever import DocumentRetriever
 import json
+import traceback, sys
 
 # Create your views here.
 
@@ -84,24 +86,27 @@ class DocumentAPI(View):
     def post(self, request):
         documents = request.POST.get('documents')
         try:
-            pmid_list = json.loads(documents)
-            medlines = DocumentRetriever.retrieve(pmid_list)
-            return JsonResponse(medlines, safe=False)
+            pmid_list = set(json.loads(documents))
+            doc_text = DocumentRetriever.retrieve(pmid_list)
+            return JsonResponse(doc_text)
         except:
+            traceback.print_exc(file=sys.stderr)
             return JsonResponse({'success': False})
 
     def get(self, request, pmid):
-        medlines = DocumentRetriever.retrieve([pmid])
+        medlines = DocumentRetriever.retrieve({pmid})
         return JsonResponse(medlines, safe=False)
 
 
 class AnnotationAPI(View):
     view_name = 'annotation_api'
 
-    def get(self):
-        pass
+    def get(self, request, pmid):
+        documents = Document.objects.filter(doc_id=pmid)
+        transformer = Document2Annotation(documents)
+        annotations = transformer.transform()
+        return JsonResponse(annotations)
 
     def post(self, request):
         annotations = request.POST.get('annotations')
-
-        pass
+        return JsonResponse({'success': True})

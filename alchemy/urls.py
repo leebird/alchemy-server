@@ -31,4 +31,8 @@ urlpatterns = patterns(
     url(r'^annotation$',
         csrf_exempt(AnnotationAPI.as_view()),
         name=AnnotationAPI.view_name),
+
+    url(r'^annotation/(?P<pmid>.+)$',
+        csrf_exempt(AnnotationAPI.as_view()),
+        name=AnnotationAPI.view_name),
     )

@@ -14,6 +14,9 @@ class PubMedSearcher(object):
 
     @classmethod
     def fetch(cls, pmid_list):
+        if len(pmid_list) == 0:
+            return
+        
         fields = {'db': 'pubmed',
                   'rettype': 'medline',
                   'retmode': 'text',
