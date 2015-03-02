@@ -11,7 +11,7 @@ import django
 django.setup()
 
 from django_annotation.models import *
-from annotation.readers import AnnReader
+from django_annotation.submodules.annotation.readers import AnnReader
 from django.db import transaction
 
 
@@ -92,7 +92,6 @@ class Importer:
 
     def add_relation(self, doc, relationList, tid2entity):
         for r in relationList:
-            print(r.property.vault)
             if r.property.get('direction') == 'G2M':
                 continue
                 
@@ -106,12 +105,12 @@ class Importer:
             arg0Type = self.get_argument_type(relation.category, arg0.category, 'Agent')
             arg1Type = self.get_argument_type(relation.category, arg1.category, 'Theme')
 
-            relation_arg = RelationArgument(category=arg0Type,
+            relation_arg = EntityAsArgument(category=arg0Type,
                                             relation=relation,
                                             argument=arg0)
 
             relation_arg.save()
-            relation_arg = RelationArgument(category=arg1Type,
+            relation_arg = EntityAsArgument(category=arg1Type,
                                             relation=relation,
                                             argument=arg1)
 
@@ -134,12 +133,12 @@ class Importer:
             arg0Type = self.get_argument_type(relation.category, arg0.category, 'Agent')
             arg1Type = self.get_argument_type(relation.category, arg1.category, 'Theme')
 
-            relation_arg = RelationArgument(category=arg0Type,
+            relation_arg = EntityAsArgument(category=arg0Type,
                                             relation=relation,
                                             argument=arg0)
 
             relation_arg.save()
-            relation_arg = RelationArgument(category=arg1Type,
+            relation_arg = EntityAsArgument(category=arg1Type,
                                             relation=relation,
                                             argument=arg1)
 
@@ -147,7 +146,7 @@ class Importer:
 
             trigger = tid2entity[e.trigger.property.get('id')]
             triggerType = self.get_argument_type(relation.category, trigger.category, 'Trigger')
-            relation_arg = RelationArgument(category=triggerType,
+            relation_arg = EntityAsArgument(category=triggerType,
                                             relation=relation,
                                             argument=trigger)
             relation_arg.save()
@@ -163,7 +162,7 @@ class Importer:
         '''
         if category in self.entityType:
             return self.entityType[category]
-        typing = EntityType.objects.filter(category=category)
+        typing = EntityCategory.objects.filter(category=category)
 
         if len(typing) == 0:
             raise KeyError('Entity type is not defined', category)
@@ -177,7 +176,7 @@ class Importer:
         '''
         if category in self.relationType:
             return self.relationType[category]
-        typing = RelationType.objects.filter(category=category)
+        typing = RelationCategory.objects.filter(category=category)
 
         if len(typing) == 0:
             raise KeyError('Relation type is not defined '+category)
@@ -195,7 +194,7 @@ class Importer:
         # print relationType,entityType,category
         if (relationType.category, entityType.category, category) in self.argumentType:
             return self.argumentType[(relationType.category, entityType.category, category)]
-        typing = ArgumentType.objects.filter(relation_type=relationType,
+        typing = ArgumentRole.objects.filter(relation_type=relationType,
                                              entity_type=entityType,
                                              category=category)
 
