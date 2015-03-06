@@ -8,6 +8,7 @@ class Relation(models.Model):
 
     doc = models.ForeignKey(Document)
     category = models.ForeignKey(RelationCategory)
-
+    uid = models.CharField(max_length=32)
+    
     def __str__(self):
         return str(self)

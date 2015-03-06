@@ -6,7 +6,7 @@ class RelationAsArgument(models.Model):
     class Meta:
         db_table = 'tm_relation_as_argument'
 
-    category = models.ForeignKey(ArgumentRole)
+    role = models.ForeignKey(ArgumentRole)
     relation = models.ForeignKey(Relation, related_name='relation_arguments')
     argument = models.ForeignKey(Relation)
 

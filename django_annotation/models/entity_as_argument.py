@@ -7,7 +7,7 @@ class EntityAsArgument(models.Model):
     class Meta:
         db_table = 'tm_entity_as_argument'
 
-    category = models.ForeignKey(ArgumentRole)
+    role = models.ForeignKey(ArgumentRole)
     relation = models.ForeignKey(Relation, related_name='entity_arguments')
     argument = models.ForeignKey(Entity)
 

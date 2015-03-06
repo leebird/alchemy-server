@@ -28,6 +28,14 @@ urlpatterns = patterns(
         csrf_exempt(DocumentAPI.as_view()),
         name=DocumentAPI.view_name),
 
+    url(r'^entity_category$',
+        csrf_exempt(EntityCategoryAPI.as_view()),
+        name=EntityCategoryAPI.view_name),
+
+    url(r'^relation_category$',
+        csrf_exempt(RelationCategoryAPI.as_view()),
+        name=RelationCategoryAPI.view_name),
+
     url(r'^annotation$',
         csrf_exempt(AnnotationAPI.as_view()),
         name=AnnotationAPI.view_name),

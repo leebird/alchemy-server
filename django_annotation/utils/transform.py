@@ -13,7 +13,7 @@ class Document2BioNLP(object):
     def transform(self):
         res = {}
         for doc in self.documents:
-            doc_id = doc.doc_id.encode('utf-8')
+            doc_id = doc.doc_id
             res[doc_id] = self.transform_document(doc)
         return res
 
@@ -21,7 +21,7 @@ class Document2BioNLP(object):
         doc = {}
         entities, id2tid = self.transform_entity(document.entity_set.all())
         relations = self.transform_relation(document.relation_set.all(), id2tid)
-        doc['text'] = document.text.encode('utf-8')
+        doc['text'] = document.text
         doc['entities'] = entities
         doc['relations'] = relations
         return doc
@@ -42,7 +42,7 @@ class Document2BioNLP(object):
                 start = t.start
                 end = t.end
                 entities.append((tid, typing, ((start, end),)))
-                id2tid[t.id] = tid
+                print(t.text)
             except KeyError:
                 pass
         return entities, id2tid

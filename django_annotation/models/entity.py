@@ -11,7 +11,8 @@ class Entity(models.Model):
     start = models.IntegerField()
     end = models.IntegerField()
     text = models.TextField()
-
+    uid = models.CharField(max_length=32)
+    
     def get_category(self):
         return self.category.category
 

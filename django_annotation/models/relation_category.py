@@ -6,7 +6,6 @@ class RelationCategory(models.Model):
         db_table = 'tm_relation_category'
 
     category = models.CharField(max_length=32)
-    argument_num = models.IntegerField()
     version = models.ForeignKey(Version)
 
     def __str__(self):

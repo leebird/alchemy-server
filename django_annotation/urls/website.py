@@ -24,4 +24,8 @@ web_urlpatterns = patterns(
         SentenceView.as_view(),
         name=SentenceView.view_name),
 
+    url(r'^brat/(?P<doc_ids>.+?)$',
+        BratView.as_view(),
+        name=BratView.view_name),
+
     )
