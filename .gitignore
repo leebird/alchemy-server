@@ -56,3 +56,9 @@ docs/_build/
 target/
 
 
+# intellij
+.idea/
+django-annotation.iml
+
+# this project
+data/
