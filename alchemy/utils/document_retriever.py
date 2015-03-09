@@ -1,11 +1,13 @@
-import re
 from django_annotation.utils.pubmed import PubMedSearcher, MedlineParser
 from django_annotation.models import Document
+from django.db import transaction
+
 
 class DocumentRetriever:
     """download abstract from pubmed, excluding those already in database
     """
     @classmethod
+    @transaction.atomic
     def retrieve(cls, pmid_list):
         not_in_db = cls.filter(pmid_list)
         medlines_text = PubMedSearcher.fetch(not_in_db)

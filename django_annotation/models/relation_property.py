@@ -5,7 +5,7 @@ class RelationProperty(models.Model):
     class Meta:
         db_table = 'tm_relation_property'
 
-    relation = models.ForeignKey(Relation)
+    relation = models.ForeignKey(Relation, db_index=True)
     label = models.CharField(max_length=64)
     value = models.CharField(max_length=128)
 

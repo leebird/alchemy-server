@@ -5,7 +5,7 @@ class DocumentProperty(models.Model):
     class Meta:
         db_table = 'tm_document_property'
 
-    doc = models.ForeignKey(Document)
+    doc = models.ForeignKey(Document, db_index=True)
     label = models.CharField(max_length=64)
     value = models.CharField(max_length=128)
 

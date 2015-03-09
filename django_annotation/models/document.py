@@ -4,7 +4,7 @@ class Document(models.Model):
     class Meta:
         db_table = 'tm_document'
 
-    doc_id = models.CharField(max_length=32)
+    doc_id = models.CharField(max_length=32, db_index=True)
     text = models.TextField()
 
     def __str__(self):

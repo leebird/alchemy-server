@@ -4,8 +4,8 @@ class User(models.Model):
     class Meta:
         db_table = 'tm_user'
 
-    username = models.CharField(max_length=32)
-    password = models.CharField(max_length=32)
+    username = models.CharField(max_length=32, db_index=True)
+    password = models.CharField(max_length=32, db_index=True)
     
     def __str__(self):
         return self.username

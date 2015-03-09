@@ -6,8 +6,8 @@ class Version(models.Model):
     class Meta:
         db_table = 'tm_version'
 
-    version = models.CharField(max_length=64)
-    user = models.ForeignKey(User)
+    version = models.CharField(max_length=64, db_index=True)
+    user = models.ForeignKey(User, db_index=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

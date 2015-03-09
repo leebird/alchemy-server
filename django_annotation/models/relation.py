@@ -7,8 +7,8 @@ class Relation(models.Model):
     class Meta:
         db_table = 'tm_relation'
 
-    doc = models.ForeignKey(Document)
-    category = models.ForeignKey(RelationCategory)
+    doc = models.ForeignKey(Document, db_index=True)
+    category = models.ForeignKey(RelationCategory, db_index=True)
     uid = models.CharField(max_length=32)
 
     def __str__(self):

@@ -6,8 +6,8 @@ class Entity(models.Model):
     class Meta:
         db_table = 'tm_entity'
 
-    doc = models.ForeignKey(Document)
-    category = models.ForeignKey(EntityCategory)
+    doc = models.ForeignKey(Document, db_index=True)
+    category = models.ForeignKey(EntityCategory, db_index=True)
     start = models.IntegerField()
     end = models.IntegerField()
     text = models.TextField()
