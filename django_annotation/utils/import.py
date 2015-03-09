@@ -11,14 +11,13 @@ import django
 django.setup()
 
 from django_annotation.models import *
-from django_annotation.submodules.annotation.readers import AnnReader
+from django_annotation.submodules.annotation.readers import AnnParser
 from django.db import transaction
 
 
 class Importer:
-    '''
-    populate database with data in a folder
-    '''
+    """ populate database with data in a folder
+    """
 
     def __init__(self, path):
         self.path = path
@@ -50,7 +49,7 @@ class Importer:
                 attr_value = attr_value[0]
                 relation.property.add(attr_name, attr_value)
                 
-        reader = AnnReader(event_handler=event_handler,relation_handler=relation_handler)
+        reader = AnnParser(event_handler=event_handler,relation_handler=relation_handler)
         
         for root, _, files in os.walk(self.path):
             for f in files:

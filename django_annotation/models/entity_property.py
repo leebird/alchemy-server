@@ -11,3 +11,7 @@ class EntityProperty(models.Model):
 
     def __str__(self):
         return str((self.entity, self.label, self.value))
+
+
+    def __repr__(self):
+        return self.__str__()

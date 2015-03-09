@@ -9,3 +9,10 @@ class Version(models.Model):
     version = models.CharField(max_length=64)
     user = models.ForeignKey(User)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        # __str__ must return type str
+        return str((self.user.username, self.version))
+    
+    def __repr__(self):
+        return self.__str__()

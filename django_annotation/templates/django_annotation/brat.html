@@ -51,18 +51,33 @@
                 {#                    bgColor: '#f1f447',#}
                 {#                    borderColor: 'darken'#}
                 {#                },#}
+            ],
+            event_types: [
+                {
+                    type: 'Phosphorylation',
+                    labels: ['Phosphorylation'],
+                    bgColor: 'lightgreen',
+                    borderColor: 'darken',
+                    arcs: [
+                        {type: 'Substrate', labels: ['Substrate']},
+                        {type: 'Kinase', labels: ['Kinase']},
+                        {type: 'Site', labels: ['Site']}
+                    ]
+                }
             ]
         };
+
+
         var webFontURLs = [
-            bratLocation + '/static/fonts/Astloch-Bold.ttf',
-            bratLocation + '/static/fonts/PT_Sans-Caption-Web-Regular.ttf',
-            bratLocation + '/static/fonts/Liberation_Sans-Regular.ttf'
+            bratLocation + '/fonts/Astloch-Bold.ttf',
+            bratLocation + '/fonts/PT_Sans-Caption-Web-Regular.ttf',
+            bratLocation + '/fonts/Liberation_Sans-Regular.ttf'
         ];
 
         var docList = eval({{ doc_list|safe }});
+
         head.ready(function () {
-            console.log(123);
-            for (doc in docList) {
+            for (var doc in docList) {
                 $('#container').append('<div><h3>' + doc + '</h3></div>' + '<div id="pmid-' + doc + '"></div><br />');
                 Util.embed('pmid-' + doc, collData, docList[doc], undefined);
             }

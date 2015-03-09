@@ -11,6 +11,9 @@ class RelationCategory(models.Model):
     def __str__(self):
         return self.category
 
+    def __repr__(self):
+        return self.__str__()
+
     def arguments(self):
         role2entity = {}
         result = []

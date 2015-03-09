@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from alchemy.utils.document_retriever import DocumentRetriever
 import json
 import traceback, sys
+from django.db import transaction
 
 # Create your views here.
 
@@ -161,7 +162,7 @@ class EntityCategoryAPI(View):
 
         for ent_cat in entity_categories:
             self.save_entity_category(ent_cat, db_version)
-            
+
         return JsonResponse({'success': True})
 
     @classmethod
@@ -200,18 +201,18 @@ class RelationCategoryAPI(View):
             password = request.POST.get('password')
             version = request.POST.get('version')
             relation_categories = json.loads(request.POST.get('relation_category_set'))
-    
+
             db_user = UserAPI.get_user(username, password, auth=True)
             db_version = VersionAPI.get_version(version, db_user)
-    
+
             if (not db_user) or (not db_version):
                 return JsonResponse({'success': False})
-    
+
             for rel_cat, roles in relation_categories:
                 db_category = self.save_relation_category(rel_cat, db_version)
                 for role in roles:
                     ArgumentRoleAPI.save_argument_role(role, db_category)
-            
+
             return JsonResponse({'success': True})
         except:
             traceback.print_exc(file=sys.stderr)
@@ -274,12 +275,77 @@ class ArgumentRoleAPI(View):
 class AnnotationAPI(View):
     view_name = 'annotation_api'
 
+    @staticmethod
+    @transaction.atomic
+    def save_annotation(annotations, entity_category_map, relation_category_map, role_category_map, msgs):
+        doc_id_count = 0
+
+        for doc_id, annotation in annotations.items():
+            try:
+                doc = Document.objects.get(doc_id=doc_id)
+            except (Document.DoesNotExist, Document.MultipleObjectsReturned):
+                msgs.append('document not exists or multiple found: ')
+                continue
+            else:
+                id_map = {}
+
+                for entity in annotation.get('entity_set'):
+                    category = entity.get('category')
+                    db_category = entity_category_map.get(category)
+                    if db_category is None:
+                        msgs.append('entity category not found: ' + doc_id + ' ' + category)
+                        continue
+
+                    start = entity.get('start')
+                    end = entity.get('end')
+                    text = entity.get('text')
+                    id_ = entity.get('id')
+                    db_entity = Entity(doc=doc, category=db_category, start=start, end=end, text=text, uid=id_)
+                    db_entity.save()
+                    id_map[id_] = db_entity
+
+                for relation in annotation.get('relation_set'):
+                    category = relation.get('category')
+                    db_category = relation_category_map.get(category)
+                    if db_category is None:
+                        msgs.append('relation category not found: ' + doc_id + ' ' + category)
+                        continue
+                    id_ = relation.get('id')
+
+                    db_relation = Relation(doc=doc, category=db_category, uid=id_)
+                    db_relation.save()
+                    id_map[id_] = db_relation
+
+                for relation in annotation.get('relation_set'):
+                    id_ = relation.get('id')
+                    category = relation.get('category')
+                    for arg_role, arg_id in relation.get('argument_set'):
+                        argument = id_map.get(arg_id)
+                        db_role = role_category_map.get((category, arg_role))
+                        db_relation = id_map.get(id_)
+
+                        if db_role is None:
+                            msgs.append('role not found: ' + doc_id + ' ' + str((category, arg_role)))
+                            continue
+                        
+                        if argument is not None:
+                            if isinstance(argument, Entity):
+                                arg_entity = EntityAsArgument(role=db_role, argument=argument, relation=db_relation)
+                                arg_entity.save()
+                            elif isinstance(argument, Relation):
+                                arg_relation = RelationAsArgument(role=db_role, argument=argument, relation=db_relation)
+                                arg_relation.save()
+
+                doc_id_count += 1
+        return msgs, doc_id_count
+
     def get(self, request, pmid):
         documents = Document.objects.filter(doc_id=pmid)
         transformer = Document2Annotation(documents)
         annotations = transformer.transform()
         return JsonResponse(annotations)
 
+    @transaction.atomic
     def post(self, request):
         try:
             annotations_json = request.POST.get('annotation_set')
@@ -287,90 +353,44 @@ class AnnotationAPI(View):
             version = request.POST.get('version')
             username = request.POST.get('username')
             password = request.POST.get('password')
-    
+
             entity_categories = json.loads(request.POST.get('entity_category_set'))
             relation_categories = json.loads(request.POST.get('relation_category_set'))
-    
+
             try:
                 db_user = User.objects.get(username=username, password=password)
             except (User.DoesNotExist, User.MultipleObjectsReturned):
                 return JsonResponse({'success': False, 'message': 'user auth error'})
-    
+
             msgs = []
             db_version = VersionAPI.get_version(version, db_user)
-            category_map = {}
-    
+            entity_category_map = {}
+            relation_category_map = {}
+            role_category_map = {}
+
             # get entity categories
             for ent_cat in entity_categories:
                 db_entity_category = EntityCategoryAPI.get_entity_category(ent_cat, db_version)
-                category_map[ent_cat] = db_entity_category
-    
+                entity_category_map[ent_cat] = db_entity_category
+
             # get relation categories
+            # rel_cat is <relation, roles> tuple, e.g., <Phosphorylation, <Kinase, Substrate, Site>>
             for rel_cat in relation_categories:
                 db_relation_category = RelationCategoryAPI.get_relation_category(rel_cat[0], db_version)
-                category_map[rel_cat[0]] = db_relation_category
-    
+                relation_category_map[rel_cat[0]] = db_relation_category
+
             # get argument roles
             for rel_cat in relation_categories:
                 roles = rel_cat[1]
-                db_relation_category = category_map[rel_cat[0]]
+                db_relation_category = relation_category_map[rel_cat[0]]
                 for role in roles:
                     db_role = ArgumentRoleAPI.get_argument_role(role, db_relation_category)
-                    category_map[(rel_cat[0], role)] = db_role
-    
-            doc_id_count = 0
-            for doc_id, annotation in annotations.items():
-                try:
-                    doc = Document.objects.get(doc_id=doc_id)
-                except (Document.DoesNotExist, Document.MultipleObjectsReturned):
-                    msgs.append('document not exists or multiple found: ')
-                    continue
-                else:
-                    id_map = {}
-                    
-                    for entity in annotation.get('entity_set'):
-                        category = entity.get('category')
-                        db_category = category_map.get(category)
-                        if db_category is None:
-                            msgs.append('entity category not found: ' + doc_id + ' ' + category)
-                            continue
-    
-                        start = entity.get('start')
-                        end = entity.get('end')
-                        text = entity.get('text')
-                        id_ = entity.get('id')
-    
-                        db_entity = Entity(doc=doc, category=db_category, start=start, end=end, text=text, uid=id_)
-                        db_entity.save()
-                        id_map[id_] = db_entity
-    
-                    for relation in annotation.get('relation_set'):
-                        category = relation.get('category')
-                        db_category = category_map.get(category)
-                        if db_category is None:
-                            msgs.append('relation category not found: ' + doc_id + ' ' + category)
-                            continue
-                        id_ = relation.get('id')
-    
-                        db_relation = Relation(doc=doc, category=db_category, uid=id_)
-                        id_map[id_] = db_relation
-    
-                    for relation in annotation.get('relation_set'):
-                        id_ = relation.get('id')
-                        for arg_role, arg_id in relation.get('argument_set'):
-                            argument = id_map.get(arg_id)
-                            db_role = category_map.get(arg_role)
-                            db_relation = id_map.get(id_)
-                            if argument is not None:
-                                if isinstance(argument, Entity):
-                                    arg_entity = EntityAsArgument(role=db_role, argument=argument, relation=db_relation)
-                                    arg_entity.save()
-                                elif isinstance(argument, Relation):
-                                    arg_relation = RelationAsArgument(role=db_role, argument=argument, relation=db_relation)
-                                    arg_relation.save()
-                    
-                    doc_id_count += 1
-                    
-            return JsonResponse({'message':msgs, 'imported_doc': doc_id_count})
-        except:
+                    # map from <phosphorylation, Substrate> to db_role
+                    role_category_map[(rel_cat[0], role)] = db_role
+
+            msgs, doc_id_count = self.save_annotation(annotations, entity_category_map,
+                                                      relation_category_map, role_category_map, msgs)
+
+            return JsonResponse({'message': msgs, 'imported_doc': doc_id_count})
+        except Exception:
             traceback.print_exc(file=sys.stderr)

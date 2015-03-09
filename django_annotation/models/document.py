@@ -9,3 +9,6 @@ class Document(models.Model):
 
     def __str__(self):
         return str((self.doc_id, self.text))
+
+    def __repr__(self):
+        return self.__str__()

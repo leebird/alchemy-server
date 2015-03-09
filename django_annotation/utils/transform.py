@@ -1,11 +1,13 @@
 from django_annotation.models import *
+import json
+
 
 class Document2BioNLP(object):
-    '''
+    """
     output a set of documents and their entities and relations
     to brat embedding format. About brat embedding format: 
     http://brat.nlplab.org/embed.html
-    '''
+    """
 
     def __init__(self, documents):
         self.documents = documents
@@ -19,62 +21,107 @@ class Document2BioNLP(object):
 
     def transform_document(self, document):
         doc = {}
-        entities, id2tid = self.transform_entity(document.entity_set.all())
-        relations = self.transform_relation(document.relation_set.all(), id2tid)
+        entities, triggers, id2tid = self.transform_entity(document.entity_set.all())
+        triggers, events = self.transform_event(document.relation_set.all(), triggers, id2tid)
         doc['text'] = document.text
         doc['entities'] = entities
-        doc['relations'] = relations
+        doc['triggers'] = list(triggers.values())
+        doc['events'] = events
         return doc
 
-    def transform_entity(self, entityList):
-        '''
-        get document's entities in bionlp format. 
+    @staticmethod
+    def transform_entity(entity_list):
+        """ get document's entities in bionlp format. 
         positions are actually a list of tuples, which are all lists in javascript.
         [tid,type,[[start,end]]]
         ['T1','Protein',[[10,20]]]
-        '''
+        """
         entities = []
+        triggers = {}
         id2tid = {}
-        for i, t in enumerate(entityList):
+        for i, t in enumerate(entity_list):
+            typing = t.category.category
             tid = 'T' + str(i + 1)
             try:
-                typing = t.category.category
                 start = t.start
                 end = t.end
-                entities.append((tid, typing, ((start, end),)))
-                print(t.text)
+                if typing == 'Trigger':
+                    triggers[tid] = [tid, typing, ((start, end),)]
+                else:
+                    entities.append((tid, typing, ((start, end),)))
+                id2tid[t.id] = tid
             except KeyError:
                 pass
-        return entities, id2tid
+        return entities, triggers, id2tid
 
-    def transform_relation(self, relationList, id2tid):
-        '''
-        get document's relations in bionlp format
-        '''
+    @staticmethod
+    def transform_event(relation_list, triggers, id2tid):
+        """ get document's relations in bionlp format
+        """
         relations = []
-        for i, r in enumerate(relationList):
-            rid = 'R' + str(i + 1)
-            args = r.relationargument_set.all()
-            typing = r.category.category
-            argTuples = []
+        for i, relation in enumerate(relation_list):
+            args = relation.entity_arguments.all()
+            is_event = False
+            arg_tuples = []
+            trigger_id = None
             for arg in args:
-                tid = id2tid[arg.argument.id]
-                argType = arg.category.category
-                argTuples.append((argType, tid))
-            relations.append((rid, typing, argTuples))
-        return relations
+                tid = id2tid.get(arg.argument.id)
+                arg_role = arg.role.role
+                if arg_role == 'Trigger':
+                    is_event = True
+                    trigger_id = tid
+                    trigger = triggers[tid]
+                    trigger[1] = relation.category.category
+                    continue
+                arg_tuples.append((arg_role, tid))
+            
+            if not is_event:
+                continue
+            
+            rid = 'E' + str(i + 1)
+            relations.append((rid, trigger_id, arg_tuples))
+        return triggers, relations
 
-    def transform_attribute(self, attributes):
-        '''
-        get attribute hash for an entitiy
+    @staticmethod
+    def transform_relation(relation_list, triggers, id2tid):
+        """ get document's relations in bionlp format
+        """
+        relations = []
+        for i, relation in enumerate(relation_list):
+            args = relation.entity_arguments.all()
+            prefix = 'R'
+            arg_tuples = []
+            trigger_id = None
+            for arg in args:
+                tid = id2tid.get(arg.argument.id)
+                arg_role = arg.role.role
+                if arg_role == 'Trigger':
+                    prefix = 'E'
+                    trigger_id = tid
+                    trigger = triggers[tid]
+                    trigger[1] = relation.category.category
+                    continue
+                arg_tuples.append((arg_role, tid))
+
+            if prefix == 'R':
+                continue
+
+            rid = prefix + str(i + 1)
+            typing = relation.category.category
+            relations.append((rid, trigger_id, typing, arg_tuples))
+        return triggers, relations
+
+    @staticmethod
+    def transform_attribute(attributes):
+        """ get attribute hash for an entitiy
         key is attribute name, value is a list of corresponding values
         mandatory attribute: type
-        '''
+        """
         res = {}
         for a in attributes:
             prop = a.attribute
             val = a.value
-            if res.has_key(prop):
+            if prop in res:
                 res[prop].append(val)
             else:
                 res[prop] = [val]
@@ -175,9 +222,9 @@ class Document2Annotation(object):
         return res
 
 class Document2Relation:
-    '''
+    """
     output a specific relation of a set of documents into tuples
-    '''
+    """
 
     def __init__(self, documents, relationType):
         self.documents = documents
@@ -204,9 +251,9 @@ class Document2Relation:
         return relations
 
     def transform_relation(self, relationList):
-        '''
+        """
         get document's relations into tuples
-        '''
+        """
         relations = []
         for i, r in enumerate(relationList):
             args = r.relationargument_set.all()
@@ -219,11 +266,11 @@ class Document2Relation:
         return relations
 
     def transform_attribute(self, attributes):
-        '''
+        """
         get attribute hash for an entitiy
         key is attribute name, value is a list of corresponding values
         mandatory attribute: type
-        '''
+        """
         res = {}
         for a in attributes:
             prop = a.attribute
