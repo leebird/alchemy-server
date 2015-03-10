@@ -1,12 +1,15 @@
 from django.db import models
-from .version import Version
+from .collection import Collection
+
 
 class RelationCategory(models.Model):
     class Meta:
         db_table = 'tm_relation_category'
+        verbose_name = 'Relation Category'
+        verbose_name_plural = 'Relation Categories'
 
     category = models.CharField(max_length=32)
-    version = models.ForeignKey(Version)
+    collection = models.ForeignKey(Collection)
 
     def __str__(self):
         return self.category
@@ -15,15 +18,9 @@ class RelationCategory(models.Model):
         return self.__str__()
 
     def arguments(self):
-        role2entity = {}
-        result = []
+        result = set()
         for role in self.argumentrole_set.all():
-            if role.category in role2entity:
-                role2entity[role.category].append(role.entity_category.category)
-            else:
-                role2entity[role.category] = [role.entity_category.category]
-        for category, entity in role2entity.items():
-            result.append(category + ':' + '|'.join(entity))
+            result.add(role.role)
         return ', '.join(result)
 
     arguments.short_description = 'Arguments'

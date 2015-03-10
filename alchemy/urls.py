@@ -12,13 +12,13 @@ urlpatterns = patterns(
         csrf_exempt(UserAPI.as_view()),
         name=UserAPI.view_name),
 
-    url(r'^version/(?P<username>.+)/(?P<version>.+)$',
-        csrf_exempt(VersionAPI.as_view()),
-        name=VersionAPI.view_name),
+    url(r'^collection/(?P<username>.+)/(?P<version>.+)$',
+        csrf_exempt(CollectionAPI.as_view()),
+        name=CollectionAPI.view_name),
 
-    url(r'^version$',
-        csrf_exempt(VersionAPI.as_view()),
-        name=VersionAPI.view_name),
+    url(r'^collection$',
+        csrf_exempt(CollectionAPI.as_view()),
+        name=CollectionAPI.view_name),
 
     url(r'^document/(?P<pmid>.+)$',
         csrf_exempt(DocumentAPI.as_view()),

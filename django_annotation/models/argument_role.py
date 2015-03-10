@@ -8,7 +8,6 @@ class ArgumentRole(models.Model):
 
     role = models.CharField(max_length=128)
     relation_category = models.ForeignKey(RelationCategory)
-    mandatory = models.BooleanField(default=True)
 
     def __str__(self):
         return self.role

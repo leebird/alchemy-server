@@ -12,7 +12,7 @@ class EntityAsArgument(models.Model):
     argument = models.ForeignKey(Entity, db_index=True)
 
     def __str__(self):
-        return str((self.relation, self.argument, self.category))
+        return str((self.relation, self.argument, self.role))
 
     def __repr__(self):
         return self.__str__()

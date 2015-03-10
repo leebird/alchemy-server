@@ -87,7 +87,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
-STATIC_URL = '/django_nlp/static/'
-STATIC_ROOT = '/home/leebird/Projects/django_nlp/static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = '/home/leebird/Projects/django-annotation/static/'
 
 #INTERNAL_IPS = ['171.108.202.117']

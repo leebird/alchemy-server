@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django_annotation.models import *
 
-# Register your models here.
+
 class DocumentAdmin(admin.ModelAdmin):
     search_fields = ['text']
     list_display = ('doc_id', 'text')
@@ -12,9 +12,9 @@ class RelationAdmin(admin.ModelAdmin):
     list_display = ('category', 'doc_id', 'argument')
 
     def argument(self, instance):
-        args = instance.relationargument_set.all()
-        argStr = [arg.category.category + ': ' + arg.argument.text for arg in args]
-        return ', '.join(argStr)
+        args = instance.entity_arguments.all()
+        arg_str = [arg.role.role + ': ' + arg.argument.text for arg in args]
+        return ', '.join(arg_str)
 
     def doc_id(self, instance):
         return instance.doc.doc_id
@@ -23,18 +23,25 @@ class RelationAdmin(admin.ModelAdmin):
 class ArgumentRoleAdmin(admin.ModelAdmin):
     list_display = ('role', 'relation_category')
 
+    def relation_category(self, instance):
+        return instance.relation_category.category
+
+
+class EntityCategoryInline(admin.TabularInline):
+    model = EntityCategory
+    extra = 3
+
+
+class EntityCategoryAdmin(admin.ModelAdmin):
+    pass
+
 
 class ArgumentRoleInline(admin.TabularInline):
     model = ArgumentRole
     extra = 2
 
 
-class EntityTypeInline(admin.TabularInline):
-    model = EntityCategory
-    extra = 3
-
-
-class RelationTypeAdmin(admin.ModelAdmin):
+class RelationCategoryAdmin(admin.ModelAdmin):
     list_display = ('category', 'arguments')
     inlines = [ArgumentRoleInline]
 
@@ -49,9 +56,19 @@ class EntityAdmin(admin.ModelAdmin):
         return instance.category.category
 
 
+class CollectionAdmin(admin.ModelAdmin):
+    list_display = ('collection', 'user', 'timestamp')
+
+
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('username',)
+
+
 admin.site.register(Document, DocumentAdmin)
-admin.site.register(EntityCategory)
-admin.site.register(RelationCategory, RelationTypeAdmin)
+admin.site.register(EntityCategory, EntityCategoryAdmin)
+admin.site.register(RelationCategory, RelationCategoryAdmin)
 admin.site.register(ArgumentRole, ArgumentRoleAdmin)
 admin.site.register(Relation, RelationAdmin)
 admin.site.register(Entity, EntityAdmin)
+admin.site.register(User, UserAdmin)
+admin.site.register(Collection, CollectionAdmin)

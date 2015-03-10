@@ -6,7 +6,7 @@ from .document import Document
 from .entity import Entity
 from .relation import Relation
 from .user import User
-from .version import Version
+from .collection import Collection
 from .entity_category import EntityCategory
 from .entity_property import EntityProperty
 from .relation_category import RelationCategory

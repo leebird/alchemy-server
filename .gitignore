@@ -66,3 +66,4 @@ backup/
 log/
 socket/
 django_annotation/migrations/
+static/
