@@ -14,11 +14,38 @@ class AnnotationAPI(View):
     view_name = 'annotation_api'
 
     @staticmethod
+    def save_entity_property(entity, property):
+        if not isinstance(property, dict):
+            return
+        for label, value in property.items():
+            if isinstance(value, list):
+                for val in value:
+                    ep = EntityProperty(entity=entity, label=label, value=val)
+                    ep.save()
+            elif isinstance(value, str):
+                ep = EntityProperty(entity=entity, label=label, value=value)
+                ep.save()
+
+    @staticmethod
+    def save_relation_property(relation, property):
+        if not isinstance(property, dict):
+            return
+        for label, value in property.items():
+            if isinstance(value, list):
+                for val in value:
+                    rp = RelationProperty(relation=relation, label=label, value=val)
+                    rp.save()
+            elif isinstance(value, str):
+                rp = RelationProperty(relation=relation, label=label, value=value)
+                rp.save()
+                
+    @staticmethod
     @transaction.atomic
     def save_annotation(annotations, entity_category_map, relation_category_map, role_category_map, msgs):
         doc_id_count = 0
 
-        for doc_id, annotation in annotations.items():
+        for annotation in annotations:
+            doc_id = annotation.get('doc_id')
             try:
                 doc = Document.objects.get(doc_id=doc_id)
             except (Document.DoesNotExist, Document.MultipleObjectsReturned):
@@ -42,6 +69,9 @@ class AnnotationAPI(View):
                     db_entity.save()
                     id_map[id_] = db_entity
 
+                    property = entity.get('property')
+                    AnnotationAPI.save_entity_property(db_entity, property)
+                    
                 for relation in annotation.get('relation_set'):
                     category = relation.get('category')
                     db_category = relation_category_map.get(category)
@@ -53,7 +83,9 @@ class AnnotationAPI(View):
                     db_relation = Relation(doc=doc, category=db_category, uid=id_)
                     db_relation.save()
                     id_map[id_] = db_relation
-
+                    property = relation.get('property')
+                    AnnotationAPI.save_relation_property(db_relation, property)
+                    
                 for relation in annotation.get('relation_set'):
                     id_ = relation.get('id')
                     category = relation.get('category')
@@ -94,7 +126,12 @@ class AnnotationAPI(View):
 
             entity_categories = json.loads(request.POST.get('entity_category_set'))
             relation_categories = json.loads(request.POST.get('relation_category_set'))
-
+            
+            if entity_categories is None:
+                entity_categories = ()
+            if relation_categories is None:
+                relation_categories = ()
+            
             try:
                 db_user = User.objects.get(username=username, password=password)
             except (User.DoesNotExist, User.MultipleObjectsReturned):

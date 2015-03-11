@@ -20,7 +20,9 @@ class RelationCategoryAPI(View):
             password = request.POST.get('password')
             collection = request.POST.get('collection')
             relation_categories = json.loads(request.POST.get('relation_category_set'))
-
+            if relation_categories is None:
+                return JsonResponse({'success': True})
+            
             db_user = UserAPI.get_user(username, password, auth=True)
             db_collection = CollectionAPI.get_collection(collection, db_user)
 
