@@ -9,23 +9,28 @@ class DocumentRetriever:
     """
     @classmethod
     @transaction.atomic
-    def retrieve(cls, pmid_list):
+    def retrieve(cls, pmid_list, is_retrieve=True):
         not_in_db = cls.filter(pmid_list)
         medlines_text = PubMedSearcher.fetch(not_in_db)
         if medlines_text is not None:
             medlines = MedlineParser.parse(medlines_text.strip())
-
+            documents = []
             for pmid, medline in medlines.items():
                 title = medline.get('title')
                 abstract = medline.get('abstract')
-                title = title[0] if title is not None else ''
-                abstract = abstract[0] if abstract is not None else ''
+                title = title if title is not None else ''
+                abstract = abstract if abstract is not None else ''
                 text = title + ' ' + abstract
                 text = text.strip()
                 document = Document(doc_id=pmid, text=text)
-                document.save()
-        
-        return cls.retrieve_db(pmid_list)
+                # document.save()
+                documents.append(document)
+                
+            # bulk create documents to save time
+            Document.objects.bulk_create(documents)
+                
+        if is_retrieve:
+            return cls.retrieve_db(pmid_list)
 
     @classmethod
     def retrieve_db(cls, pmid_list):

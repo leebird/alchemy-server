@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django_annotation.models import *
+from django.db.models import Count
 
 
 class DocumentAdmin(admin.ModelAdmin):
@@ -57,7 +58,25 @@ class EntityAdmin(admin.ModelAdmin):
 
 
 class CollectionAdmin(admin.ModelAdmin):
-    list_display = ('collection', 'user', 'timestamp')
+    list_display = ('collection', 'user',
+                    'entity_category_num', 'relation_category_num',
+                    'timestamp')
+
+
+    def get_queryset(self, request):
+        qs = super(CollectionAdmin, self).get_queryset(request)
+        qs = qs.annotate(entity_category_num=Count('entitycategory'))
+        qs = qs.annotate(relation_category_num=Count('relationcategory'))
+        return qs
+
+    def entity_category_num(self, instance):
+        return instance.entity_category_num
+
+    def relation_category_num(self, instance):
+        return instance.relation_category_num
+
+    entity_category_num.short_description = 'Entity Category Count'
+    relation_category_num.short_description = 'Relation Category Count'
 
 
 class UserAdmin(admin.ModelAdmin):

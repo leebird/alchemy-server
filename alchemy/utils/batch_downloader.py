@@ -25,6 +25,6 @@ with open(pmid_list, 'r') as handle:
             break
         
         print(curr)
-        DocumentRetriever.retrieve(pmid_slice)
+        DocumentRetriever.retrieve(pmid_slice, is_retrieve=False)
         curr += step
         time.sleep(3)
