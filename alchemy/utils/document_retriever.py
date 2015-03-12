@@ -1,4 +1,5 @@
-from django_annotation.utils.pubmed import PubMedSearcher, MedlineParser
+from django_annotation.utils.pubmed import PubMedSearcher
+from django_annotation.submodules.annotation.readers import MedlineParser
 from django_annotation.models import Document
 from django.db import transaction
 
@@ -15,8 +16,8 @@ class DocumentRetriever:
             medlines = MedlineParser.parse(medlines_text.strip())
 
             for pmid, medline in medlines.items():
-                title = medline.get('Title')
-                abstract = medline.get('Abstract')
+                title = medline.get('title')
+                abstract = medline.get('abstract')
                 title = title[0] if title is not None else ''
                 abstract = abstract[0] if abstract is not None else ''
                 text = title + ' ' + abstract
