@@ -8,6 +8,7 @@ sys.path.append('/home/leebird/Projects/legonlp/')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_nlp.settings")
 
 import django
+
 django.setup()
 
 from django_annotation.models import *
@@ -21,12 +22,24 @@ gene_category = EntityCategory.objects.get(category='Gene')
 # 
 # relations = list(Relation.objects.select_related('doc').filter(category=relation_category))
 
-exact_match = 0
-end_count = 0
-count = 0
+count = {
+    'total': 0,
+    'exact_match': 0,
+    'end_match': 0,
+    'kinase_total': 0,
+    'substrate_total': 0,
+    'kinase_exact': 0,
+    'kinase_end': 0,
+    'substrate_exact': 0,
+    'substrate_end': 0
+}
+
+doc_count = 0
+
 for doc in documents:
-    count += 1
-    print('\r'+str(count), end='')
+    doc_count += 1
+    print('\r' + str(doc_count), end='')
+    
     exact_map = {}
     end_map = {}
     genes = list(doc.entity_set.filter(category=gene_category))
@@ -37,21 +50,40 @@ for doc in documents:
         norm_ids = [nid.value for nid in norm_ids]
         exact_map[(start, end)] = norm_ids
         end_map[end] = norm_ids
-        
+
     relations = list(doc.relation_set.filter(category=relation_category))
     for relation in relations:
         args = list(relation.entity_arguments.select_related('argument').all())
         for arg in args:
+            exact_match = 0
+            end_match = 0
             entity = arg.argument
-            if entity.category.category != 'Substrate' or entity.category.category != 'Kinase':
-                continue
-                
             start = entity.start
             end = entity.end
-            
+
             if (start, end) in exact_map:
-                exact_match += 1
+                exact_match = 1
             if end in end_map:
-                end_count += 1
+                end_match = 1
+            
+            if arg.role.role == 'Substrate':
+                count['total'] += 1
+                count['substrate_total'] += 1
+                count['exact_match'] += exact_match
+                count['end_match'] += end_match
+                count['substrate_exact'] += exact_match
+                count['substrate_end'] += end_match
                 
-print(exact_match, end_count)
+            elif arg.role.role == 'Kinase':
+                count['total'] += 1
+                count['kinase_total'] += 1
+                count['exact_match'] += exact_match
+                count['end_match'] += end_match
+                count['kinase_exact'] += exact_match
+                count['kinase_end'] += end_match
+            else:
+                continue
+    # print(count)
+
+
+print('\n', count)
