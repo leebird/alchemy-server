@@ -25,20 +25,60 @@
         );
         var collData = {
             entity_types: [
-                {% for c in entity_categories %}
-                    {
-                        type: '{{ c }}',
-                        labels: ['{{ c }}'],
-                        bgColor: '#90ee90',
-                        borderColor: 'darken'
-                    },
-                {% endfor %}
-                {#                {#}
-                {#                    type: 'Gene',#}
-                {#                    labels: ['Gene'],#}
-                {#                    bgColor: '#8fb2ff',#}
-                {#                    borderColor: 'darken'#}
-                {#                },#}
+                {
+                    type: 'Protein',
+                    labels: ['Protein'],
+                    bgColor: '#90ee90',
+                    borderColor: 'darken'
+                },
+                {
+                    type: 'Trigger',
+                    labels: ['Trigger'],
+                    bgColor: '#90ee90',
+                    borderColor: 'darken'
+                },
+                {
+                    type: 'Site',
+                    labels: ['Site'],
+                    bgColor: '#90ee90',
+                    borderColor: 'darken'
+                },
+                {
+                    type: 'SiteOther',
+                    labels: ['SiteOther'],
+                    bgColor: '#90ee90',
+                    borderColor: 'darken'
+                },
+                {
+                    type: 'Gene',
+                    labels: ['Gene'],
+                    bgColor: '#8fb2ff',
+                    borderColor: 'darken'
+                },
+                {
+                    type: 'Disease',
+                    labels: ['Disease'],
+                    bgColor: '#8fb2ff',
+                    borderColor: 'darken'
+                },
+                {
+                    type: 'Mutation',
+                    labels: ['Mutation'],
+                    bgColor: '#8fb2ff',
+                    borderColor: 'darken'
+                },
+                {
+                    type: 'Chemical',
+                    labels: ['Gene'],
+                    bgColor: '#8fb2ff',
+                    borderColor: 'darken'
+                },
+                {
+                    type: 'Species',
+                    labels: ['Species'],
+                    bgColor: '#8fb2ff',
+                    borderColor: 'darken'
+                },
                 {#                {#}
                 {#                    type: 'Family',#}
                 {#                    labels: ['Family', 'Fam'],#}

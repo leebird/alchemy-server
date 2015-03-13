@@ -34,18 +34,42 @@ class EntityCategoryInline(admin.TabularInline):
 
 
 class EntityCategoryAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('category', 'entity_count', 'collection_name', 'user' )
+    
+    def user(self, instance):
+        return instance.collection.user.username
+    
+    def collection_name(self, instance):
+        return instance.collection.collection
+    collection_name.short_description = 'Collection'
 
-
-class ArgumentRoleInline(admin.TabularInline):
-    model = ArgumentRole
-    extra = 2
-
+    def entity_count(self, instance):
+        return instance.entity_count
+    entity_count.short_description = 'Entity Count'
+    
+    def get_queryset(self, request):
+        qs = super(EntityCategoryAdmin, self).get_queryset(request)
+        qs = qs.annotate(entity_count=Count('entity'))
+        return qs
 
 class RelationCategoryAdmin(admin.ModelAdmin):
-    list_display = ('category', 'arguments')
-    inlines = [ArgumentRoleInline]
+    list_display = ('category', 'arguments', 'relation_count', 'collection_name', 'user')
 
+    def user(self, instance):
+        return instance.collection.user.username
+
+    def collection_name(self, instance):
+        return instance.collection.collection
+    collection_name.short_description = 'Collection'
+
+    def relation_count(self, instance):
+        return instance.relation_count
+    relation_count.short_description = 'Relation Count'
+
+    def get_queryset(self, request):
+        qs = super(RelationCategoryAdmin, self).get_queryset(request)
+        qs = qs.annotate(relation_count=Count('relation'))
+        return qs
 
 class EntityAdmin(admin.ModelAdmin):
     list_display = ('doc_id', 'category', 'text')
@@ -59,24 +83,24 @@ class EntityAdmin(admin.ModelAdmin):
 
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ('collection', 'user',
-                    'entity_category_num', 'relation_category_num',
+                    'entity_category_count', 'relation_category_count',
                     'timestamp')
 
 
     def get_queryset(self, request):
         qs = super(CollectionAdmin, self).get_queryset(request)
-        qs = qs.annotate(entity_category_num=Count('entitycategory'))
-        qs = qs.annotate(relation_category_num=Count('relationcategory'))
+        qs = qs.annotate(entity_category_count=Count('entitycategory'))
+        qs = qs.annotate(relation_category_count=Count('relationcategory'))
         return qs
 
-    def entity_category_num(self, instance):
-        return instance.entity_category_num
+    def entity_category_count(self, instance):
+        return instance.entity_category_count
 
-    def relation_category_num(self, instance):
-        return instance.relation_category_num
+    def relation_category_count(self, instance):
+        return instance.relation_category_count
 
-    entity_category_num.short_description = 'Entity Category Count'
-    relation_category_num.short_description = 'Relation Category Count'
+    entity_category_count.short_description = 'Entity Category Count'
+    relation_category_count.short_description = 'Relation Category Count'
 
 
 class UserAdmin(admin.ModelAdmin):

@@ -60,43 +60,43 @@ class PubMedSearcher(object):
         return tmpl.format(term)
 
 
-class MedlineParser(object):
-    mapping = {
-        "PMID-": "PMID",
-        "TI  -": "Title",
-        "AB  -": "Abstract",
-        "DP  -": "Date",
-        "AU  -": "Author",
-        "TA  -": "Journal"
-    }
-
-    def __init__(self):
-        pass
-
-    @classmethod
-    def parse(cls, medlines):
-
-        medlines = medlines.replace('\r', '').replace('\n     ', '')
-        medline_list = medlines.split('\n\n')
-
-        results = {}
-        for block in medline_list:
-            medline = {}
-            block = block.strip()
-            lines = block.split('\n')
-            for line in lines:
-                head = line[:5]
-                if head in cls.mapping:
-                    try:
-                        medline[cls.mapping[head]].append(line[5:].strip())
-                    except KeyError:
-                        medline[cls.mapping[head]] = [line[5:].strip()]
-            
-            if len(medline) > 0:
-                results[medline['PMID'][0]] = medline
-
-        return results
-
-    def parse_file(self, filepath):
-        pass
-    
+# class MedlineParser(object):
+#     mapping = {
+#         "PMID-": "PMID",
+#         "TI  -": "Title",
+#         "AB  -": "Abstract",
+#         "DP  -": "Date",
+#         "AU  -": "Author",
+#         "TA  -": "Journal"
+#     }
+#
+#     def __init__(self):
+#         pass
+#
+#     @classmethod
+#     def parse(cls, medlines):
+#
+#         medlines = medlines.replace('\r', '').replace('\n     ', '')
+#         medline_list = medlines.split('\n\n')
+#
+#         results = {}
+#         for block in medline_list:
+#             medline = {}
+#             block = block.strip()
+#             lines = block.split('\n')
+#             for line in lines:
+#                 head = line[:5]
+#                 if head in cls.mapping:
+#                     try:
+#                         medline[cls.mapping[head]].append(line[5:].strip())
+#                     except KeyError:
+#                         medline[cls.mapping[head]] = [line[5:].strip()]
+#
+#             if len(medline) > 0:
+#                 results[medline['PMID'][0]] = medline
+#
+#         return results
+#
+#     def parse_file(self, filepath):
+#         pass
+#

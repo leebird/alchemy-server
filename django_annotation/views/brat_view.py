@@ -20,13 +20,14 @@ class BratView(FormView):
         docs = Document.objects.filter(doc_id__in=doc_id_list)
         transformer = Document2BioNLP(docs)
         self.annotations = transformer.transform()
-        self.entity_categories = set([t[1] for doc in self.annotations.values() for t in doc.get('entities')])
+        # self.entity_categories = set([t[1] for doc in self.annotations.values() for t in doc.get('entities')])
+
         return super(BratView, self).get(request)
 
     def get_context_data(self, **kwargs):
         context = super(BratView, self).get_context_data(**kwargs)
         context['doc_list'] = json.dumps(self.annotations)
         context['app_name'] = self.app_name
-        context['entity_categories'] = self.entity_categories
-        print(self.entity_categories)
+        # context['entity_categories'] = self.entity_categories
+        # print(self.entity_categories)
         return context
