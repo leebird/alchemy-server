@@ -65,5 +65,5 @@ data/
 backup/
 log/
 socket/
-django_annotation/migrations/
+alchemy_server/migrations/*
 static/
