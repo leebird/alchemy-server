@@ -1,0 +1,37 @@
+{% extends app_name|add:"/base.html" %}
+
+{% block content %}
+<div id="dtm-annotation">
+  <div id="dtm-left-column">
+    <table class="table table-hover">
+      <thead>
+	<tr>
+	  <td>miRNA</td><td>Gene</td><td>Sentence</td>
+	</tr>
+      </thead>
+      <tbody>
+	{% for tuple,sentpos in tuples.items %}
+	<tr>
+	  <td>{{ tuple.0 }}</td>
+	  <td>{{ tuple.1 }}</td>
+	  <td>{{ sentpos|join:", " }}</td>
+	</tr>
+	{% endfor %}
+      </tbody>
+    </table>
+    
+  </div>
+  <div id="dtm-right-column">
+    <div id="dtm-annotation-docid">
+      <a href="http://www.ncbi.nlm.nih.gov/pubmed/{{doc.doc_id}}">PMID {{doc.doc_id}}</a>
+    </div>
+    <div id="dtm-annotation-text">
+      <ul id="dtm-annotation-sentence-list">
+	   {% autoescape off %}
+	   {{tagged}}
+	   {% endautoescape %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
