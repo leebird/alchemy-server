@@ -1,7 +1,0 @@
-A novel class of herpesvirus-encoded membrane-bound E3 ubiquitin ligases regulates endocytosis of proteins involved in immune recognition.
-Kaposi' s sarcoma-associated herpesvirus encodes two transmembrane proteins (modulator of immune recognition [MIR] 1 and MIR2) that downregulate cell surface molecules (MHC-I, B7.2, and ICAM-1) involved in the immune recognition of infected cells.
-This downregulation results from enhanced endocytosis and subsequent endolysosomal degradation of the target proteins.
-Here, we show that expression of MIR1 and MIR2 leads to ubiquitination of the cytosolic tail of their target proteins and that ubiquitination is essential for their removal from the cell surface.
-MIR1 and MIR2 both contain cytosolic zinc fingers of the PHD subfamily, and these structures are required for this activity.
-In vitro, addition of a MIR2-glutathione S-transferase (GST) fusion protein to purified E1 and E2 enzymes leads to transfer of ubiquitin (Ub) to GST-containing targets in an ATP-and E2-dependent fashion; this reaction is abolished by mutation of the Zn-coordinating residues of the PHD domain.
-Thus, MIR2 defines a novel class of membrane-bound E3 Ub ligases that modulates the trafficking of host cell membrane proteins.
