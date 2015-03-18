@@ -67,3 +67,4 @@ log/
 socket/
 alchemy_server/migrations/*
 /static/
+!/alchemy_server/**/lib
