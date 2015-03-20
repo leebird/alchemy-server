@@ -100,18 +100,24 @@ class AnnotationAPI(View):
 
                         if argument is not None:
                             if isinstance(argument, Entity):
-                                arg_entity = EntityAsArgument(role=db_role, argument=argument, relation=db_relation)
+                                arg_entity = EntityAsArgument(role=db_role, 
+                                                              argument=argument, 
+                                                              relation=db_relation)
                                 arg_entity.save()
                             elif isinstance(argument, Relation):
-                                arg_relation = RelationAsArgument(role=db_role, argument=argument, relation=db_relation)
+                                arg_relation = RelationAsArgument(role=db_role, 
+                                                                  argument=argument, 
+                                                                  relation=db_relation)
                                 arg_relation.save()
 
                 doc_id_count += 1
         return msgs, doc_id_count
 
     def get(self, request, pmid):
+        username = request.GET.get('username')
+        collection = request.GET.get('collection')
         documents = Document.objects.filter(doc_id=pmid)
-        transformer = Document2Annotation(documents)
+        transformer = Document2Annotation(documents, username, collection)
         annotations = transformer.transform()
         return JsonResponse(annotations)
 

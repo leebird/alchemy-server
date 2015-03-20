@@ -6,7 +6,6 @@ sys.path.append('/home/leebird/Projects/legonlp/')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "alchemy_django.settings")
 
 import django
-
 django.setup()
 
 from .document_retriever import DocumentRetriever

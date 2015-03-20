@@ -3,8 +3,7 @@ import json
 
 
 class Document2BioNLP(object):
-    """
-    output a set of documents and their entities and relations
+    """ output a set of documents and their entities and relations
     to brat embedding format. About brat embedding format: 
     http://brat.nlplab.org/embed.html
     """
@@ -74,10 +73,10 @@ class Document2BioNLP(object):
                     trigger[1] = relation.category.category
                     continue
                 arg_tuples.append((arg_role, tid))
-            
+
             if not is_event:
                 continue
-            
+
             rid = 'E' + str(i + 1)
             relations.append((rid, trigger_id, arg_tuples))
         return triggers, relations
@@ -127,14 +126,22 @@ class Document2BioNLP(object):
                 res[prop] = [val]
         return res
 
+
 class Document2Annotation(object):
-    """
-    output a set of documents and their entities and relations
+    """ output a set of documents and their entities and relations
     to annotation format.
     """
 
-    def __init__(self, documents):
+    def __init__(self, documents, username=None, collection=None):
         self.documents = documents
+        if username is not None and collection is not None:
+            self.user = User.objects.get(username=username)
+            self.collection = Collection.objects.get(user=self.user, collection=collection)
+            self.entity_category = EntityCategory.objects.filter(collection=self.collection)
+            self.relation_category = RelationCategory.objects.filter(collection=self.collection)
+        else:
+            self.user = None
+            self.collection = None
 
     def transform(self):
         res = {}
@@ -145,139 +152,92 @@ class Document2Annotation(object):
 
     def transform_document(self, document):
         doc = {}
-        entities, id2tid = self.transform_entity(document.entity_set.all())
-        relations = self.transform_relation(document.relation_set.all(), id2tid)
+        if self.collection is None:
+            entity_set = document.entity_set.all()
+            relation_set = document.relation_set.all()
+        else:
+            entity_set = document.entity_set.filter(category__in=self.entity_category)
+            relation_set = document.relation_set.filter(category__in=self.relation_category)
+
+        entities = self.transform_entity(entity_set)
+        relations = self.transform_relation(relation_set)
+        properties = self.transform_property(document.documentproperty_set.all())
         doc['text'] = document.text
-        doc['entities'] = entities
-        doc['relations'] = relations
+        doc['entity_set'] = entities
+        doc['relation_set'] = relations
+        doc['property'] = properties
+        doc['doc_id'] = document.doc_id
         return doc
 
     def transform_entity(self, entity_list):
-        """
-        get document's entities in bionlp format.
-        positions are actually a list of tuples, which are all lists in javascript.
-        [tid,type,[[start,end]]]
-        ['T1','Protein',[[10,20]]]
+        """ get document's entities in annotation format.
         """
         entities = []
-        id2tid = {}
-        temp_id = 1
-        
+
         for entity in entity_list:
-            try:
-                tid = entity.entity_property_set.get(label='id')
-            except:
-                tid = 'TT' + str(temp_id)
-                temp_id += 1
-            try:
-                typing = entity.category.category
-                start = entity.start
-                end = entity.end
-                entities.append((tid, typing, ((start, end),)))
-                id2tid[entity.id] = tid
-            except KeyError:
-                pass
-        return entities, id2tid
+            tid = entity.uid
+            category = entity.category.category
+            start = entity.start
+            end = entity.end
+            text = entity.text
+            properties = entity.entityproperty_set.all()
+            ent_property = self.transform_property(properties)
 
-    def transform_relation(self, relation_list, id2tid):
-        """
-        get document's relations in bionlp format
+            entities.append({
+                'id': tid,
+                'category': category,
+                'start': start,
+                'end': end,
+                'text': text,
+                'property': ent_property
+            })
+        return entities
+
+    def transform_relation(self, relation_list):
+        """ get document's relations in annotation format
         """
         relations = []
-        temp_id = 1
         for relation in relation_list:
-            try:
-                rid = relation.relation_property_set.get(label='id')
-            except:
-                rid = 'RR' + str(temp_id)
-                temp_id += 1
-                
-            args = relation.relationargument_set.all()
-            typing = relation.category.category
-            
+            rid = relation.uid
+            entity_args = relation.entity_arguments.all()
+            relation_args = relation.relation_arguments.all()
+            category = relation.category.category
+
             arg_tuples = []
-            for arg in args:
-                tid = id2tid[arg.argument.id]
-                arg_role = arg.category.category
+            for arg in entity_args:
+                tid = arg.argument.uid
+                arg_role = arg.role.role
                 arg_tuples.append((arg_role, tid))
-            relations.append((rid, typing, arg_tuples))
-            
+
+            for arg in relation_args:
+                tid = arg.argument.property.get('id')
+                arg_role = arg.role.role
+                arg_tuples.append((arg_role, tid))
+
+            properties = relation.relationproperty_set.all()
+            rel_property = self.transform_property(properties)
+
+            relations.append({
+                'id': rid,
+                'category': category,
+                'argument_set': arg_tuples,
+                'property': rel_property
+            })
+
         return relations
 
-
-    def transform_attribute(self, attributes):
+    def transform_property(self, db_properties):
+        """ get property from QuerySet property_set
         """
-        get attribute hash for an entity
-        key is attribute name, value is a list of corresponding values
-        mandatory attribute: type
-        """
-        res = {}
-        for a in attributes:
-            prop = a.attribute
-            val = a.value
-            if prop in res:
-                res[prop].append(val)
+        property = {}
+        for db_property in db_properties:
+            label = db_property.label
+            value = db_property.value
+            if label in property:
+                if isinstance(property[label], list):
+                    property[label].append(value)
+                else:
+                    property[label] = [property[label], value]
             else:
-                res[prop] = [val]
-        return res
-
-class Document2Relation:
-    """
-    output a specific relation of a set of documents into tuples
-    """
-
-    def __init__(self, documents, relationType):
-        self.documents = documents
-        self.relationType = relationType
-        self.positiveDocNum = 0
-
-    def transform(self):
-        res = {}
-        for doc in self.documents:
-            doc_id = doc.doc_id.encode('utf-8')
-            res[doc_id] = self.transform_document(doc)
-        return res
-
-    def transform_document(self, document):
-        # doc = {}
-        #entities,id2tid = self.transform_entity(document.entity_set.all())
-        relationSet = document.relation_set.filter(category=self.relationType)
-        relations = self.transform_relation(relationSet)
-        #doc['text'] = document.text.encode('utf-8')
-        #doc['entities'] = entities
-        #doc['relations'] = relations
-        if len(relations) > 0:
-            self.positiveDocNum += 1
-        return relations
-
-    def transform_relation(self, relationList):
-        """
-        get document's relations into tuples
-        """
-        relations = []
-        for i, r in enumerate(relationList):
-            args = r.relationargument_set.all()
-            argTuples = []
-            for arg in args:
-                argType = arg.category.category
-                argText = arg.argument.text
-                argTuples.append((argType, argText))
-            relations.append(argTuples)
-        return relations
-
-    def transform_attribute(self, attributes):
-        """
-        get attribute hash for an entitiy
-        key is attribute name, value is a list of corresponding values
-        mandatory attribute: type
-        """
-        res = {}
-        for a in attributes:
-            prop = a.attribute
-            val = a.value
-            if res.has_key(prop):
-                res[prop].append(val)
-            else:
-                res[prop] = [val]
-        return res
-
+                property[label] = value
+        return property

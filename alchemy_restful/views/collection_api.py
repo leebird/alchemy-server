@@ -20,15 +20,32 @@ class CollectionAPI(View):
             username = request.POST.get('username')
             password = request.POST.get('password')
             collection = request.POST.get('collection')
-    
+
             db_collection = self.save_collection(collection, username, password)
-    
+
             if db_collection:
                 return JsonResponse({'success': True, 'collection': db_collection.collection, 'username': username})
             else:
                 return JsonResponse({'success': False})
         except Exception as e:
             print(e)
+
+    @classmethod
+    def get_collection_docs(cls, collection):
+
+        entity_category = EntityCategory.objects.filter(collection=collection)
+        relation_category = RelationCategory.objects.filter(collection=collection)
+        entities = Entity.objects.only('doc').filter(
+            category__in=entity_category).values('doc_id')
+        relations = Relation.objects.only('doc').filter(
+            category__in=relation_category).values('doc_id')
+
+        docs = set()
+        for entity in entities:
+            docs.add(entity.get('doc_id'))
+        for relation in relations:
+            docs.add(relation.get('doc_id'))
+        return docs
 
     @classmethod
     def get_collection(cls, collection, user):

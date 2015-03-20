@@ -69,7 +69,7 @@
                 },
                 {
                     type: 'Chemical',
-                    labels: ['Gene'],
+                    labels: ['Chemical'],
                     bgColor: '#8fb2ff',
                     borderColor: 'darken'
                 },
@@ -79,12 +79,12 @@
                     bgColor: '#8fb2ff',
                     borderColor: 'darken'
                 },
-                {#                {#}
-                {#                    type: 'Family',#}
-                {#                    labels: ['Family', 'Fam'],#}
-                {#                    bgColor: '#ffccaa',#}
-                {#                    borderColor: 'darken'#}
-                {#                },#}
+                {
+                    type: 'MiRNA',
+                    labels: ['MiRNA'],
+                    bgColor: '#ffccaa',
+                    borderColor: 'darken'
+                },
                 {#                {#}
                 {#                    type: 'Complex',#}
                 {#                    labels: ['Complex', 'Com'],#}
@@ -102,6 +102,26 @@
                         {type: 'Substrate', labels: ['Substrate']},
                         {type: 'Kinase', labels: ['Kinase']},
                         {type: 'Site', labels: ['Site']}
+                    ]
+                },
+                {
+                    type: 'MiRNA2Gene',
+                    labels: ['MiRNA2Gene'],
+                    bgColor: 'lightgreen',
+                    borderColor: 'darken',
+                    arcs: [
+                        {type: 'Agent', labels: ['Agent']},
+                        {type: 'Theme', labels: ['Theme']}
+                    ]
+                },
+                {
+                    type: 'Gene2MiRNA',
+                    labels: ['Gene2MiRNA'],
+                    bgColor: 'lightgreen',
+                    borderColor: 'darken',
+                    arcs: [
+                        {type: 'Agent', labels: ['Agent']},
+                        {type: 'Theme', labels: ['Theme']}
                     ]
                 }
             ]
