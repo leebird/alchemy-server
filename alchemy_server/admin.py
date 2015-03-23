@@ -15,8 +15,8 @@ class CollectionAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super(CollectionAdmin, self).get_queryset(request)
-        qs = qs.annotate(entity_category_count=Count('entitycategory'))
-        qs = qs.annotate(relation_category_count=Count('relationcategory'))
+        qs = qs.annotate(entity_category_count=Count('entitycategory', distinct=True))
+        qs = qs.annotate(relation_category_count=Count('relationcategory', distinct=True))
         return qs
 
     def entity_category_count(self, instance):
@@ -60,7 +60,7 @@ class EntityCategoryAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super(EntityCategoryAdmin, self).get_queryset(request)
-        qs = qs.annotate(entity_count=Count('entity'))
+        qs = qs.annotate(entity_count=Count('entity', distinct=True))
         return qs
 
 
@@ -83,7 +83,7 @@ class RelationCategoryAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super(RelationCategoryAdmin, self).get_queryset(request)
-        qs = qs.annotate(relation_count=Count('relation'))
+        qs = qs.annotate(relation_count=Count('relation', distinct=True))
         return qs
 
 

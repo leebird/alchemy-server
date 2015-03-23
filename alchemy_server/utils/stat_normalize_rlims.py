@@ -1,26 +1,33 @@
 import sys
 import os
-import codecs
-import json
+import pprint
 
 sys.path.append('/home/leebird/Projects/alchemy-server')
 sys.path.append('/home/leebird/Projects/legonlp/')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "alchemy_django.settings")
 
 import django
-
 django.setup()
 
 from alchemy_server.models import *
-from submodules.annotation.readers import AnnParser
-from django.db import transaction
 
-documents = list(Document.objects.only('doc_id').all())
+norm_collection = sys.argv[1]
+
+doc_id_file = None
+if len(sys.argv) > 2:
+    doc_id_file = sys.argv[2]
+
+if doc_id_file is not None:
+    with open(doc_id_file, 'r') as dh:
+        text = dh.read().strip()
+        doc_ids = text.split('\n')
+        documents = list(Document.objects.only('doc_id').filter(doc_id__in=doc_ids))
+else:
+    documents = list(Document.objects.only('doc_id').all())
 
 relation_category = RelationCategory.objects.get(category='Phosphorylation')
-gene_category = EntityCategory.objects.get(category='Gene')
-# 
-# relations = list(Relation.objects.select_related('doc').filter(category=relation_category))
+db_norm_collection = Collection.objects.get(collection=norm_collection)
+gene_category = EntityCategory.objects.get(category='Gene',collection=db_norm_collection)
 
 count = {
     'total': 0,
@@ -85,5 +92,5 @@ for doc in documents:
                 continue
     # print(count)
 
-
-print('\n', count)
+print('\n')
+pprint.pprint(count)
