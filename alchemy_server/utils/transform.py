@@ -21,11 +21,13 @@ class Document2BioNLP(object):
     def transform_document(self, document):
         doc = {}
         entities, triggers, id2tid = self.transform_entity(document.entity_set.all())
-        triggers, events = self.transform_event(document.relation_set.all(), triggers, id2tid)
+        db_relations = document.relation_set.all()
+        triggers, events, relations = self.transform_relation(db_relations, triggers, id2tid)
         doc['text'] = document.text
         doc['entities'] = entities
         doc['triggers'] = list(triggers.values())
         doc['events'] = events
+        doc['relations'] = relations
         return doc
 
     @staticmethod
@@ -54,9 +56,10 @@ class Document2BioNLP(object):
         return entities, triggers, id2tid
 
     @staticmethod
-    def transform_event(relation_list, triggers, id2tid):
+    def transform_relation(relation_list, triggers, id2tid):
         """ get document's relations in bionlp format
         """
+        events = []
         relations = []
         for i, relation in enumerate(relation_list):
             args = relation.entity_arguments.all()
@@ -74,41 +77,13 @@ class Document2BioNLP(object):
                     continue
                 arg_tuples.append((arg_role, tid))
 
-            if not is_event:
-                continue
-
-            rid = 'E' + str(i + 1)
-            relations.append((rid, trigger_id, arg_tuples))
-        return triggers, relations
-
-    @staticmethod
-    def transform_relation(relation_list, triggers, id2tid):
-        """ get document's relations in bionlp format
-        """
-        relations = []
-        for i, relation in enumerate(relation_list):
-            args = relation.entity_arguments.all()
-            prefix = 'R'
-            arg_tuples = []
-            trigger_id = None
-            for arg in args:
-                tid = id2tid.get(arg.argument.id)
-                arg_role = arg.role.role
-                if arg_role == 'Trigger':
-                    prefix = 'E'
-                    trigger_id = tid
-                    trigger = triggers[tid]
-                    trigger[1] = relation.category.category
-                    continue
-                arg_tuples.append((arg_role, tid))
-
-            if prefix == 'R':
-                continue
-
-            rid = prefix + str(i + 1)
-            typing = relation.category.category
-            relations.append((rid, trigger_id, typing, arg_tuples))
-        return triggers, relations
+            if is_event:
+                rid = 'E' + str(i + 1)
+                events.append((rid, trigger_id, arg_tuples))
+            else:
+                rid = 'R' + str(i + 1)
+                relations.append((rid, relation.category.category, arg_tuples))
+        return triggers, events, relations
 
     @staticmethod
     def transform_attribute(attributes):
