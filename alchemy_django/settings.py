@@ -65,7 +65,11 @@ DATABASES = {
         'NAME': 'alchemy',
         'USER': 'root',
         'PASSWORD': '198884',
-        'HOST': 'localhost'
+        'HOST': 'localhost',
+        'OPTIONS': 
+        {
+            'connect_timeout': 1800,
+        }
     }
 }
 

@@ -3,12 +3,8 @@ import os
 import codecs
 import json
 
-sys.path.append('/home/leebird/Projects/alchemy-server')
-sys.path.append('/home/leebird/Projects/legonlp/')
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "alchemy_server.settings")
-
-import django
-django.setup()
+from alchemy_init import django_init
+django_init()
 
 from alchemy_server.models import *
 from submodules.annotation.readers import AnnParser
