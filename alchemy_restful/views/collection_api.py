@@ -45,6 +45,8 @@ class CollectionAPI(View):
             docs.add(entity.get('doc_id'))
         for relation in relations:
             docs.add(relation.get('doc_id'))
+            
+        # this is doc.id, not doc.doc_id
         return docs
 
     @classmethod
