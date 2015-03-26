@@ -1,7 +1,7 @@
 from django.views.generic import View
 from alchemy_server.models import *
 from django.http import JsonResponse
-from alchemy_restful.utils.document_retriever import DocumentRetriever
+from utils.document_retriever import DocumentRetriever
 import json
 import traceback, sys
 
