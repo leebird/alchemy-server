@@ -1,13 +1,14 @@
 import sys
-
+import re
 from utils.alchemy_init import django_init
-
 django_init()
+
 from alchemy_server.models import *
 from alchemy_restful.views.collection_api import CollectionAPI
 from alchemy_restful.views.user_api import UserAPI
 
 amino_acid_map = {'Ser': 'S', 'Thr': 'T', 'Tyr': 'Y'}
+pattern = re.compile(r'[0-9]+')
 
 norm_collection = sys.argv[1]
 entrez_uniprot_file = sys.argv[2]
@@ -15,11 +16,12 @@ fasta_file = sys.argv[3]
 reviewed_uniprot_file = sys.argv[4]
 kinase_uniprot_file = sys.argv[5]
 result_file = sys.argv[6]
+mode = sys.argv[7]
 
 db_user = UserAPI.get_user(username='ligang', auth=False)
 db_collection = CollectionAPI.get_collection(collection='RLIMS-P', user=db_user)
 doc_ids = CollectionAPI.get_collection_docs(db_collection)
-# doc_ids = ['10191262']
+#doc_ids = ['9890970']
 documents = Document.objects.only('id', 'doc_id').filter(id__in=doc_ids)
 
 relation_category = RelationCategory.objects.get(category='Phosphorylation')
@@ -99,15 +101,28 @@ for doc in documents:
             norm_ids = []
             if (start, end) in exact_map:
                 exact_match = True
-                norm_ids = exact_map[(start, end)]
+                if mode == 'exact':
+                    norm_ids = exact_map[(start, end)]
 
             if end in end_map:
                 end_match = True
+                if mode == 'end':
+                    norm_ids = end_map[end]
+
+            if entity.text.endswith(')') and (end-1) in end_map:
+                end_match = True
+                if mode == 'end':
+                    norm_ids = end_map[end-1]
 
             uniprot_acs = set()
             for norm_id in norm_ids:
-                if norm_id in entrez2uniprot:
-                    uniprot_acs |= set(entrez2uniprot[norm_id])
+                if not norm_id.startswith('PSSMID:'):
+                    sub_norm_ids = pattern.findall(norm_id)
+                else:
+                    continue
+                for nid in sub_norm_ids:
+                    if nid in entrez2uniprot:
+                        uniprot_acs |= set(entrez2uniprot[nid])
 
             if arg.role.role == 'Substrate':
                 norm_rel['substrate'].add((entity.text, tuple(uniprot_acs)))
@@ -130,21 +145,17 @@ for doc in documents:
                     # add one of these ACs
                     norm_rel['kinase'].add((entity.text, tuple([unreviewed_kinase_acs.pop()])))
             elif arg.role.role == 'Site':
-                try:
-                    db_amino_acid = entity.entityproperty_set.filter(label='amino_acid')
-                    db_position = entity.entityproperty_set.filter(label='position')
-                except AttributeError:
-                    continue
-                if len(db_amino_acid) == 0 or len(db_position) == 0:
-                    continue
-                amino_acid = db_amino_acid[0].value
-                position = int(db_position[0].value)
-                norm_rel['site'].add((amino_acid, position))
+                db_std_sites = entity.entityproperty_set.filter(label='std_site')
+                for db_std_site in db_std_sites:
+                    std_site = db_std_site.value
+                    if len(std_site) > 3 and std_site.find('-') != -1:
+                        amino_acid, position = std_site.split('-')
+                        position = int(position)
+                        norm_rel['site'].add((amino_acid, position))
             else:
                 continue
                 # print(count)
-
-        # print(norm_rel)
+        print(norm_rel)
         # no site
         if len(norm_rel['site']) == 0:
             continue
