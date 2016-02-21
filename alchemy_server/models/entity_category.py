@@ -7,7 +7,10 @@ class EntityCategory(models.Model):
         verbose_name = 'Entity Category'
         verbose_name_plural = 'Entity Categories'
 
+    # The entity category, e.g., Gene, miRNA or Disease.
     category = models.CharField(max_length=32)
+    # The corresponding collection/text-mining tool that
+    # produces this entity category.
     collection = models.ForeignKey(Collection)
 
     def __str__(self):

@@ -7,8 +7,11 @@ class RelationCategory(models.Model):
         db_table = 'tm_relation_category'
         verbose_name = 'Relation Category'
         verbose_name_plural = 'Relation Categories'
-
+        
+    # The entity category, e.g., Gene, miRNA or Disease.
     category = models.CharField(max_length=32)
+    # The corresponding collection/text-mining tool that
+    # produces this entity category.
     collection = models.ForeignKey(Collection)
 
     def __str__(self):
